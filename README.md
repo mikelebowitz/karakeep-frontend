@@ -40,7 +40,7 @@ A modern bookmark management system frontend built with React-Admin and Material
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/YOUR_USERNAME/karakeep-frontend.git
+git clone https://github.com/mikelebowitz/karakeep-frontend.git
 cd karakeep-frontend
 ```
 
@@ -99,7 +99,7 @@ src/
 
 ### Deploy to Vercel
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/YOUR_USERNAME/karakeep-frontend)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/mikelebowitz/karakeep-frontend)
 
 1. Click the button above or import your GitHub repository on Vercel
 2. Configure environment variables:
@@ -130,7 +130,7 @@ This frontend expects a REST API with the following endpoints:
 - `DELETE /bookmarks/:id` - Delete bookmark
 - Similar endpoints for `/tags` and `/lists`
 
-See the [backend documentation](https://github.com/YOUR_USERNAME/karakeep-backend) for API details.
+See the [backend documentation](https://github.com/mikelebowitz/karakeep-backend) for API details.
 
 ## Contributing
 
