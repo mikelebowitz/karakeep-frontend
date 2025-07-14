@@ -1,34 +1,52 @@
 export interface Bookmark {
   id: string;
-  url: string;
-  title: string;
-  description?: string;
-  tags: Tag[];
-  lists: List[];
-  favicon?: string;
-  screenshot?: string;
-  is_archived: boolean;
-  created_at: string;
-  updated_at: string;
+  title?: string;
+  archived: boolean;
+  favourited: boolean;
+  taggingStatus: string;
+  summarizationStatus: string;
+  note?: string;
+  summary?: string;
+  tags: KarakeepTag[];
+  content: {
+    type: string;
+    url: string;
+    title?: string;
+    description?: string;
+    imageUrl?: string;
+    screenshotAssetId?: string;
+    favicon?: string;
+    htmlContent?: string;
+  };
+  createdAt: string;
+  modifiedAt: string;
+}
+
+export interface KarakeepTag {
+  id: string;
+  name: string;
+  attachedBy: 'ai' | 'human';
 }
 
 export interface Tag {
   id: string;
   name: string;
-  color?: string;
-  bookmark_count?: number;
-  created_at: string;
-  updated_at: string;
+  numBookmarks: number;
+  numBookmarksByAttachedType: {
+    ai: number;
+    human: number;
+  };
 }
 
 export interface List {
   id: string;
   name: string;
-  description?: string;
-  icon?: string;
-  bookmark_count?: number;
-  created_at: string;
-  updated_at: string;
+  description: string;
+  icon: string;
+  parentId?: string;
+  type: 'manual' | 'smart';
+  query?: string;
+  public: boolean;
 }
 
 export interface User {

@@ -13,6 +13,7 @@ import type {
 import axios, { type AxiosInstance } from 'axios';
 
 const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+const apiToken = import.meta.env.VITE_API_TOKEN;
 
 class KarakeepDataProvider implements DataProvider {
   private httpClient: AxiosInstance;
@@ -24,7 +25,8 @@ class KarakeepDataProvider implements DataProvider {
 
     // Add auth token to requests
     this.httpClient.interceptors.request.use((config) => {
-      const token = localStorage.getItem('auth_token');
+      // Use environment token if available, otherwise fallback to localStorage
+      const token = apiToken || localStorage.getItem('auth_token');
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -79,15 +81,20 @@ class KarakeepDataProvider implements DataProvider {
 
     const { data } = await this.httpClient.get(`/${resource}`, { params: query });
     
+    // Handle Karakeep API response format
+    const resourceData = data[resource] || data.data || [];
+    const total = data.total || data.count || resourceData.length;
+    
     return {
-      data: data.data,
-      total: data.total,
+      data: resourceData,
+      total: total,
     };
   }
 
   async getOne(resource: string, params: GetOneParams) {
     const { data } = await this.httpClient.get(`/${resource}/${params.id}`);
-    return { data };
+    // Handle Karakeep API response format - return the resource data directly
+    return { data: data[resource.slice(0, -1)] || data };
   }
 
   async getMany(resource: string, params: GetManyParams) {

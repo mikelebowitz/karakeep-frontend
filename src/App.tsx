@@ -1,4 +1,5 @@
-import { Admin, Resource } from 'react-admin';
+import React from 'react';
+import { Admin, Resource, Layout, LayoutProps } from 'react-admin';
 import { BookmarkBorder, Label, FolderOutlined } from '@mui/icons-material';
 import { dataProvider } from './providers/dataProvider';
 import { authProvider } from './providers/authProvider';
@@ -8,16 +9,28 @@ import { TagList, TagEdit, TagCreate } from './pages/tags';
 import { ListList, ListEdit, ListCreate } from './pages/lists';
 import { KeyboardShortcuts } from './components/KeyboardShortcuts';
 
+const MyLayout = (props: LayoutProps) => (
+  <React.Fragment>
+    <KeyboardShortcuts />
+    <Layout {...props} />
+  </React.Fragment>
+);
+
 function App() {
+  console.log('App component rendering...');
+  console.log('Environment variables:', {
+    API_URL: import.meta.env.VITE_API_URL,
+    API_TOKEN: import.meta.env.VITE_API_TOKEN ? 'Present' : 'Missing'
+  });
+
   return (
-    <>
-      <KeyboardShortcuts />
-      <Admin
-        dataProvider={dataProvider}
-        authProvider={authProvider}
-        loginPage={LoginPage}
-        requireAuth
-      >
+    <Admin
+      dataProvider={dataProvider}
+      authProvider={authProvider}
+      loginPage={LoginPage}
+      requireAuth
+      layout={MyLayout}
+    >
       <Resource
         name="bookmarks"
         list={BookmarkList}

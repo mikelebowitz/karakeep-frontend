@@ -1,9 +1,8 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useNotify } from 'react-admin';
+import { useNotify, useRedirect } from 'react-admin';
 
 export const KeyboardShortcuts = () => {
-  const navigate = useNavigate();
+  const redirect = useRedirect();
   const notify = useNotify();
 
   useEffect(() => {
@@ -30,20 +29,20 @@ export const KeyboardShortcuts = () => {
       // Cmd/Ctrl + N for new bookmark
       if ((e.metaKey || e.ctrlKey) && e.key === 'n') {
         e.preventDefault();
-        navigate('/bookmarks/create');
+        redirect('create', 'bookmarks');
       }
 
       // G then B for go to bookmarks
       if (e.key === 'g') {
         const listener = (event: KeyboardEvent) => {
           if (event.key === 'b') {
-            navigate('/bookmarks');
+            redirect('list', 'bookmarks');
             window.removeEventListener('keydown', listener);
           } else if (event.key === 't') {
-            navigate('/tags');
+            redirect('list', 'tags');
             window.removeEventListener('keydown', listener);
           } else if (event.key === 'l') {
-            navigate('/lists');
+            redirect('list', 'lists');
             window.removeEventListener('keydown', listener);
           }
         };
@@ -76,7 +75,7 @@ export const KeyboardShortcuts = () => {
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
     };
-  }, [navigate, notify]);
+  }, [redirect, notify]);
 
   return null;
 };

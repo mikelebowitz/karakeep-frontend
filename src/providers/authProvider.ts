@@ -3,6 +3,7 @@ import axios from 'axios';
 import type { AuthResponse } from '../types';
 
 const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+const apiToken = import.meta.env.VITE_API_TOKEN;
 
 export const authProvider: AuthProvider = {
   login: async ({ username, password }) => {
@@ -49,6 +50,11 @@ export const authProvider: AuthProvider = {
   },
 
   checkAuth: async () => {
+    // If we have an API token from environment, we're always authenticated
+    if (apiToken) {
+      return Promise.resolve();
+    }
+
     const token = localStorage.getItem('auth_token');
     
     if (!token) {
