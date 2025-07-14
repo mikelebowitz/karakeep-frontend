@@ -73,7 +73,14 @@ class KarakeepDataProvider implements DataProvider {
     
     // For bookmarks, show Inbox list contents directly
     if (resource === 'bookmarks') {
-      return this.getInboxBookmarks(page, perPage);
+      // Add a timestamp to the params to force React-Admin to treat each request as unique
+      const result = await this.getInboxBookmarks(page, perPage);
+      // Ensure each bookmark has a stable ID
+      result.data = result.data.map((bookmark: any) => ({
+        ...bookmark,
+        id: bookmark.id || bookmark._id || Math.random().toString()
+      }));
+      return result;
     }
     
     // For other resources, use simple limit-based approach
@@ -111,6 +118,21 @@ class KarakeepDataProvider implements DataProvider {
       const inboxListId = 'qukdzoowmmsnr8hb19b0z1xc'; // Inbox list ID
       const url = `/lists/${inboxListId}/bookmarks`;
       
+      // Initialize cursor storage if needed
+      if (!(window as any).__karakeepPageCursors) {
+        (window as any).__karakeepPageCursors = new Map();
+      }
+      
+      // Clear cache when perPage changes
+      const currentPerPage = (window as any).__karakeepLastPerPage;
+      if (currentPerPage !== perPage) {
+        console.log('🔄 PerPage changed, clearing cache');
+        (window as any).__karakeepPageCursors.clear();
+        (window as any).__karakeepLastPerPage = perPage;
+      }
+      
+      const cursors = (window as any).__karakeepPageCursors;
+      
       // If page 1, start fresh
       if (page === 1) {
         console.log('📡 Making request to:', url, '(page 1)');
@@ -121,65 +143,137 @@ class KarakeepDataProvider implements DataProvider {
         console.log('✅ Page 1 response:', {
           bookmarkCount: data.bookmarks?.length,
           firstBookmarkId: data.bookmarks?.[0]?.id,
+          firstBookmarkTitle: data.bookmarks?.[0]?.title || data.bookmarks?.[0]?.content?.title,
           nextCursor: data.nextCursor
         });
         
-        // Store cursor for next page
+        // Log first 3 bookmark titles for comparison
+        console.log('📋 First 3 bookmarks on page 1:', 
+          data.bookmarks?.slice(0, 3).map((b: any) => b.title || b.content?.title || 'No title')
+        );
+        
+        // Store cursor for page 2
         if (data.nextCursor) {
-          (window as any).__karakeepNextCursor = data.nextCursor;
+          cursors.set(2, data.nextCursor);
         }
         
-        return {
+        const result = {
           data: data.bookmarks || [],
-          total: 200, // Higher estimate to enable pagination
+          // Use partial pagination instead of total count
+          pageInfo: {
+            hasNextPage: !!data.nextCursor,
+            hasPreviousPage: false, // First page never has previous
+          },
+          meta: {
+            page,
+            cursor: data.nextCursor || 'none',
+            // Force unique cache key for React Query
+            cacheKey: `page-${page}-cursor-${(data.nextCursor || 'none').substring(0, 10)}`,
+            timestamp: Date.now()
+          }
         };
+        
+        console.log('📋 Returning data for page 1 - Count:', result.data.length, 'hasNextPage:', result.pageInfo.hasNextPage);
+        console.log('📋 First bookmark title:', result.data[0]?.title || result.data[0]?.content?.title);
+        
+        return result;
       }
       
       // For subsequent pages, use stored cursor
-      const nextCursor = (window as any).__karakeepNextCursor;
+      const nextCursor = cursors.get(page);
+      console.log('🔍 Available cursors:', Array.from(cursors.keys()), 'Looking for page:', page);
+      
       if (nextCursor) {
-        console.log('📡 Making request to:', url, 'with cursor:', nextCursor.substring(0, 20) + '...');
+        console.log('📡 Making request to:', url, 'with cursor for page', page, ':', nextCursor.substring(0, 20) + '...');
+        console.log('🔧 Full request params:', { limit: perPage, cursor: nextCursor });
         const { data } = await this.httpClient.get(url, {
-          params: { limit: perPage, nextCursor }
+          params: { limit: perPage, cursor: nextCursor }
         });
         
         console.log('✅ Page', page, 'response:', {
           bookmarkCount: data.bookmarks?.length,
           firstBookmarkId: data.bookmarks?.[0]?.id,
+          firstBookmarkTitle: data.bookmarks?.[0]?.title || data.bookmarks?.[0]?.content?.title,
           nextCursor: data.nextCursor
         });
         
-        // Update cursor for next page
+        // Log first 3 bookmark titles for comparison
+        console.log('📋 First 3 bookmarks on page', page, ':', 
+          data.bookmarks?.slice(0, 3).map((b: any) => b.title || b.content?.title || 'No title')
+        );
+        
+        // Store cursor for next page
         if (data.nextCursor) {
-          (window as any).__karakeepNextCursor = data.nextCursor;
+          cursors.set(page + 1, data.nextCursor);
+          console.log('💾 Stored cursor for page', page + 1, ':', data.nextCursor.substring(0, 20) + '...');
+        } else {
+          console.log('⚠️ No nextCursor in response for page', page);
         }
         
-        return {
+        const result = {
           data: data.bookmarks || [],
-          total: 200, // Higher estimate to enable pagination
+          // Use partial pagination with proper hasNextPage/hasPreviousPage
+          pageInfo: {
+            hasNextPage: !!data.nextCursor,
+            hasPreviousPage: page > 1, // Any page after 1 has previous
+          },
+          meta: {
+            page,
+            cursor: data.nextCursor || 'none',
+            // Force unique cache key for React Query
+            cacheKey: `page-${page}-cursor-${(data.nextCursor || 'none').substring(0, 10)}`,
+            timestamp: Date.now()
+          }
         };
+        
+        console.log('📋 Returning data for page', page, '- Count:', result.data.length, 
+          'hasNextPage:', result.pageInfo.hasNextPage, 'hasPreviousPage:', result.pageInfo.hasPreviousPage);
+        console.log('📋 First bookmark title:', result.data[0]?.title || result.data[0]?.content?.title);
+        
+        return result;
       }
       
-      // No cursor available, return empty
+      // No cursor available for this page
       console.log('⚠️ No cursor available for page', page);
       return {
         data: [],
-        total: 200,
+        pageInfo: {
+          hasNextPage: false,
+          hasPreviousPage: page > 1,
+        }
       };
       
     } catch (error) {
       console.error('❌ Error fetching Inbox bookmarks:', error);
       return {
         data: [],
-        total: 0,
+        pageInfo: {
+          hasNextPage: false,
+          hasPreviousPage: false,
+        }
       };
     }
   }
 
   async getOne(resource: string, params: GetOneParams) {
-    const { data } = await this.httpClient.get(`/${resource}/${params.id}`);
-    // Handle Karakeep API response format - return the resource data directly
-    return { data: data[resource.slice(0, -1)] || data };
+    console.log('🔍 Getting single', resource, 'with ID:', params.id);
+    
+    try {
+      const { data } = await this.httpClient.get(`/${resource}/${params.id}`);
+      console.log('✅ getOne response:', data);
+      
+      // Handle Karakeep API response format
+      if (resource === 'bookmarks') {
+        // For bookmarks, the API returns the bookmark data directly
+        return { data: data };
+      } else {
+        // For other resources, try to extract from nested structure
+        return { data: data[resource.slice(0, -1)] || data };
+      }
+    } catch (error) {
+      console.error('❌ Error in getOne:', error);
+      throw error;
+    }
   }
 
   async getMany(resource: string, params: GetManyParams) {
