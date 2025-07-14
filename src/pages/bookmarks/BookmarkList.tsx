@@ -15,7 +15,7 @@ import {
   useRecordContext,
   useListContext,
 } from 'react-admin';
-import { Card, CardContent, Box, Typography, Chip, Avatar, Button, Toolbar } from '@mui/material';
+import { Box, Avatar } from '@mui/material';
 import { Bookmark } from '@mui/icons-material';
 import ChevronLeft from '@mui/icons-material/ChevronLeft';
 import ChevronRight from '@mui/icons-material/ChevronRight';
@@ -40,11 +40,11 @@ const BookmarkPanel = memo(() => {
   
   if (!record) {
     return (
-      <Card sx={{ marginTop: 1, marginBottom: 1 }}>
-        <CardContent>
-          <Typography>Loading bookmark details...</Typography>
-        </CardContent>
-      </Card>
+      <div className="card bg-base-100 shadow-lg my-2">
+        <div className="card-body">
+          <p>Loading bookmark details...</p>
+        </div>
+      </div>
     );
   }
 
@@ -53,43 +53,46 @@ const BookmarkPanel = memo(() => {
   const description = record.content?.description;
   
   return (
-    <Card sx={{ marginTop: 1, marginBottom: 1 }}>
-      <CardContent>
+    <div className="card bg-base-100 shadow-lg my-2">
+      <div className="card-body">
         <Box display="flex" alignItems="flex-start" gap={2}>
           <Avatar src={record.content?.favicon} sx={{ width: 32, height: 32 }}>
             <Bookmark fontSize="small" />
           </Avatar>
           <Box flex={1}>
-            <Typography variant="h6" gutterBottom>
+            <h3 className="card-title text-lg font-semibold mb-2">
               {title}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
+            </h3>
+            <p className="text-sm text-base-content/70 mb-2">
               {url}
-            </Typography>
+            </p>
             {description && (
-              <Typography variant="body2" sx={{ mb: 1 }}>
+              <p className="text-sm mb-2">
                 {description}
-              </Typography>
+              </p>
             )}
             {record.summary && (
-              <Typography variant="body2" sx={{ mb: 1 }}>
+              <p className="text-sm mb-2">
                 <strong>Summary:</strong> {record.summary}
-              </Typography>
+              </p>
             )}
             {record.note && (
-              <Typography variant="body2" sx={{ mb: 1 }}>
+              <p className="text-sm mb-2">
                 <strong>Note:</strong> {record.note}
-              </Typography>
+              </p>
             )}
             <Box display="flex" gap={1} flexWrap="wrap" mt={1}>
               {record.tags?.map((tag: any) => (
-                <Chip
+                <span
                   key={tag.id}
-                  label={tag.name}
-                  size="small"
-                  color={tag.attachedBy === 'ai' ? 'primary' : 'default'}
-                  variant={tag.attachedBy === 'ai' ? 'filled' : 'outlined'}
-                />
+                  className={`badge badge-sm ${
+                    tag.attachedBy === 'ai' 
+                      ? 'badge-primary' 
+                      : 'badge-outline'
+                  }`}
+                >
+                  {tag.name}
+                </span>
               ))}
             </Box>
           </Box>
@@ -111,8 +114,8 @@ const BookmarkPanel = memo(() => {
             />
           )}
         </Box>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 });
 
@@ -142,30 +145,28 @@ const CursorPagination = () => {
   };
   
   return (
-    <Toolbar sx={{ justifyContent: 'center', mt: 2 }}>
+    <div className="flex justify-center mt-4">
       {hasPreviousPage && (
-        <Button 
+        <button 
           key="previous"
           onClick={() => handlePageChange(page - 1)}
-          startIcon={<ChevronLeft />}
-          variant="outlined"
-          sx={{ mr: 1 }}
+          className="btn btn-outline btn-sm mr-2"
         >
+          <ChevronLeft />
           Previous
-        </Button>
+        </button>
       )}
       {hasNextPage && (
-        <Button 
+        <button 
           key="next"
           onClick={() => handlePageChange(page + 1)}
-          endIcon={<ChevronRight />}
-          variant="outlined"
-          sx={{ ml: 1 }}
+          className="btn btn-outline btn-sm ml-2"
         >
           Next                    
-        </Button>
+          <ChevronRight />
+        </button>
       )}
-    </Toolbar>
+    </div>
   );
 };
 
@@ -192,12 +193,12 @@ const BookmarkDatagrid = () => {
         label="Title"
         render={(record: any) => (
           <Box>
-            <Typography variant="body2" noWrap>
+            <p className="text-sm font-medium truncate">
               {record.title || record.content?.title || 'No title'}
-            </Typography>
-            <Typography variant="caption" color="text.secondary" noWrap>
+            </p>
+            <p className="text-xs text-base-content/70 truncate">
               {record.content?.url}
-            </Typography>
+            </p>
           </Box>
         )}
       />
@@ -206,19 +207,19 @@ const BookmarkDatagrid = () => {
         render={(record: any) => (
           <Box display="flex" gap={0.5} flexWrap="wrap">
             {record.tags?.slice(0, 3).map((tag: any) => (
-              <Chip
+              <span
                 key={tag.id}
-                label={tag.name}
-                size="small"
-                color={tag.attachedBy === 'ai' ? 'primary' : 'default'}
-              />
+                className={`badge badge-xs ${
+                  tag.attachedBy === 'ai' ? 'badge-primary' : 'badge-outline'
+                }`}
+              >
+                {tag.name}
+              </span>
             ))}
             {record.tags?.length > 3 && (
-              <Chip
-                label={`+${record.tags.length - 3}`}
-                size="small"
-                variant="outlined"
-              />
+              <span className="badge badge-xs badge-outline">
+                +{record.tags.length - 3}
+              </span>
             )}
           </Box>
         )}
