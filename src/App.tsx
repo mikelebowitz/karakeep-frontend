@@ -1,5 +1,6 @@
 import React from 'react';
-import { Admin, Resource, Layout, LayoutProps } from 'react-admin';
+import { Admin, Resource, Layout } from 'react-admin';
+import type { LayoutProps } from 'react-admin';
 import { BookmarkBorder, Label, FolderOutlined } from '@mui/icons-material';
 import { dataProvider } from './providers/dataProvider';
 import { authProvider } from './providers/authProvider';
@@ -9,12 +10,14 @@ import { TagList, TagEdit, TagCreate } from './pages/tags';
 import { ListList, ListEdit, ListCreate } from './pages/lists';
 import { KeyboardShortcuts } from './components/KeyboardShortcuts';
 
-const MyLayout = (props: LayoutProps) => (
-  <React.Fragment>
-    <KeyboardShortcuts />
-    <Layout {...props} />
-  </React.Fragment>
-);
+const MyLayout = (props: LayoutProps) => {
+  return (
+    <>
+      <KeyboardShortcuts />
+      <Layout {...props} />
+    </>
+  );
+};
 
 function App() {
   console.log('App component rendering...');
@@ -38,7 +41,8 @@ function App() {
         create={BookmarkCreate}
         icon={BookmarkBorder}
       />
-      <Resource
+      {/* Temporarily disabled while focusing on bookmarks display */}
+      {/* <Resource
         name="tags"
         list={TagList}
         edit={TagEdit}
@@ -51,9 +55,8 @@ function App() {
         edit={ListEdit}
         create={ListCreate}
         icon={FolderOutlined}
-      />
-      </Admin>
-    </>
+      /> */}
+    </Admin>
   );
 }
 

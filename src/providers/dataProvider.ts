@@ -69,13 +69,16 @@ class KarakeepDataProvider implements DataProvider {
   }
 
   async getList(resource: string, params: GetListParams) {
-    const { page, perPage } = params.pagination || { page: 1, perPage: 10 };
-    const { field, order } = params.sort || { field: 'id', order: 'DESC' };
+    const { page, perPage } = params.pagination || { page: 1, perPage: 20 };
+    
+    // For bookmarks, show Inbox list contents directly
+    if (resource === 'bookmarks') {
+      return this.getInboxBookmarks(page, perPage);
+    }
+    
+    // For other resources, use simple limit-based approach
     const query = {
-      page,
-      per_page: perPage,
-      sort: field,
-      order: order.toLowerCase(),
+      limit: perPage,
       ...params.filter,
     };
 
@@ -83,12 +86,94 @@ class KarakeepDataProvider implements DataProvider {
     
     // Handle Karakeep API response format
     const resourceData = data[resource] || data.data || [];
-    const total = data.total || data.count || resourceData.length;
+    
+    // Estimate total for other resources
+    let total;
+    if (resource === 'tags') {
+      total = 500; // Estimate for tags
+    } else if (resource === 'lists') {
+      total = 20; // Estimate for lists
+    } else {
+      total = Math.max(resourceData.length, 100); // Default estimate
+    }
     
     return {
       data: resourceData,
       total: total,
     };
+  }
+
+  // Get bookmarks from the Inbox list with working pagination
+  private async getInboxBookmarks(page: number, perPage: number) {
+    console.log('🔍 Fetching Inbox bookmarks - page:', page, 'perPage:', perPage);
+    
+    try {
+      const inboxListId = 'qukdzoowmmsnr8hb19b0z1xc'; // Inbox list ID
+      const url = `/lists/${inboxListId}/bookmarks`;
+      
+      // If page 1, start fresh
+      if (page === 1) {
+        console.log('📡 Making request to:', url, '(page 1)');
+        const { data } = await this.httpClient.get(url, {
+          params: { limit: perPage }
+        });
+        
+        console.log('✅ Page 1 response:', {
+          bookmarkCount: data.bookmarks?.length,
+          firstBookmarkId: data.bookmarks?.[0]?.id,
+          nextCursor: data.nextCursor
+        });
+        
+        // Store cursor for next page
+        if (data.nextCursor) {
+          (window as any).__karakeepNextCursor = data.nextCursor;
+        }
+        
+        return {
+          data: data.bookmarks || [],
+          total: 200, // Higher estimate to enable pagination
+        };
+      }
+      
+      // For subsequent pages, use stored cursor
+      const nextCursor = (window as any).__karakeepNextCursor;
+      if (nextCursor) {
+        console.log('📡 Making request to:', url, 'with cursor:', nextCursor.substring(0, 20) + '...');
+        const { data } = await this.httpClient.get(url, {
+          params: { limit: perPage, nextCursor }
+        });
+        
+        console.log('✅ Page', page, 'response:', {
+          bookmarkCount: data.bookmarks?.length,
+          firstBookmarkId: data.bookmarks?.[0]?.id,
+          nextCursor: data.nextCursor
+        });
+        
+        // Update cursor for next page
+        if (data.nextCursor) {
+          (window as any).__karakeepNextCursor = data.nextCursor;
+        }
+        
+        return {
+          data: data.bookmarks || [],
+          total: 200, // Higher estimate to enable pagination
+        };
+      }
+      
+      // No cursor available, return empty
+      console.log('⚠️ No cursor available for page', page);
+      return {
+        data: [],
+        total: 200,
+      };
+      
+    } catch (error) {
+      console.error('❌ Error fetching Inbox bookmarks:', error);
+      return {
+        data: [],
+        total: 0,
+      };
+    }
   }
 
   async getOne(resource: string, params: GetOneParams) {
@@ -104,7 +189,7 @@ class KarakeepDataProvider implements DataProvider {
   }
 
   async getManyReference(resource: string, params: GetManyReferenceParams) {
-    const { page, perPage } = params.pagination || { page: 1, perPage: 10 };
+    const { page, perPage } = params.pagination || { page: 1, perPage: 20 };
     const { field, order } = params.sort || { field: 'id', order: 'DESC' };
     const query = {
       page,

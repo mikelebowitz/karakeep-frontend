@@ -23,6 +23,7 @@ import { BookmarkBulkActions } from '../../components/BatchActions';
 const BookmarkFilters = [
   <TextInput source="q" label="Search" alwaysOn />,
   <BooleanInput source="is_archived" label="Archived" />,
+  <BooleanInput source="untagged" label="Untagged (Triage)" />,
 ];
 
 const BookmarkActions = () => (
