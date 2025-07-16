@@ -2,6 +2,7 @@ import React from 'react';
 import { Admin, Resource, Layout } from 'react-admin';
 import type { LayoutProps } from 'react-admin';
 import { BookmarkBorder, Label, FolderOutlined } from '@mui/icons-material';
+import daisyuiTheme from './theme/daisyuiTheme';
 import { dataProvider } from './providers/dataProvider';
 import { authProvider } from './providers/authProvider';
 import { LoginPage } from './pages/Login';
@@ -33,6 +34,7 @@ function App() {
       loginPage={LoginPage}
       requireAuth
       layout={MyLayout}
+      theme={daisyuiTheme}
     >
       <Resource
         name="bookmarks"
