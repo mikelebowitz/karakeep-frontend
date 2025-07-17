@@ -387,10 +387,13 @@ class KarakeepDataProvider implements DataProvider {
   }
 
   async attachLists(bookmarkId: string, listIds: string[]) {
-    const { data } = await this.httpClient.post(`/bookmarks/${bookmarkId}/lists`, {
-      list_ids: listIds,
-    });
-    return data;
+    // Use individual PUT requests for each list as per API spec
+    const promises = listIds.map(listId =>
+      this.httpClient.put(`/lists/${listId}/bookmarks/${bookmarkId}`)
+    );
+    
+    await Promise.all(promises);
+    return { attached: listIds };
   }
 
   async detachLists(bookmarkId: string, listIds: string[]) {
@@ -398,6 +401,59 @@ class KarakeepDataProvider implements DataProvider {
       data: { list_ids: listIds },
     });
     return data;
+  }
+
+  // Get ALL bookmarks from Inbox for triage mode
+  async getAllInboxBookmarks(): Promise<any[]> {
+    console.log('🔍 Loading ALL Inbox bookmarks for triage mode...');
+    
+    try {
+      const allBookmarks: any[] = [];
+      const inboxListId = 'qukdzoowmmsnr8hb19b0z1xc'; // Inbox list ID
+      let cursor: string | null = null;
+      let batchCount = 0;
+      
+      do {
+        batchCount++;
+        console.log(`📦 Loading batch ${batchCount}${cursor ? ` with cursor: ${cursor.substring(0, 20)}...` : ''}`);
+        
+        const params: any = {
+          limit: 100, // API batch size
+          includeContent: true,
+        };
+        
+        if (cursor) {
+          params.cursor = cursor;
+        }
+        
+        const response = await this.httpClient.get(`/lists/${inboxListId}/bookmarks`, { params });
+        
+        if (response.data.bookmarks && response.data.bookmarks.length > 0) {
+          allBookmarks.push(...response.data.bookmarks);
+          console.log(`✅ Loaded ${response.data.bookmarks.length} bookmarks in batch ${batchCount}. Total so far: ${allBookmarks.length}`);
+        }
+        
+        cursor = response.data.nextCursor || null;
+        
+        // Safety check to prevent infinite loops
+        if (batchCount > 50) {
+          console.warn('⚠️ Hit safety limit of 50 batches, stopping load');
+          break;
+        }
+        
+      } while (cursor);
+      
+      console.log(`🎉 Loaded ${allBookmarks.length} total bookmarks from Inbox in ${batchCount} batches`);
+      
+      return allBookmarks.map((bookmark: any) => ({
+        ...bookmark,
+        id: bookmark.id || bookmark._id || Math.random().toString()
+      }));
+      
+    } catch (error) {
+      console.error('❌ Error loading all Inbox bookmarks:', error);
+      throw error;
+    }
   }
 }
 

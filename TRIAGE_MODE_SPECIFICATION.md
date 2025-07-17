@@ -39,7 +39,7 @@ Triage mode is a specialized interface for rapidly processing unassigned bookmar
 │  └──────────────────────────────┘  └─────────────────────┘  │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
-```
+```Done since our last committee.
 
 ### Components
 - **TriageHeader**: Progress indicator and quit button

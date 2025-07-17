@@ -61,6 +61,7 @@ const daisyuiTheme = deepmerge(defaultTheme, {
   },
   typography: {
     fontFamily: [
+      '"Inter Variable"',
       'Inter',
       '-apple-system',
       'BlinkMacSystemFont',

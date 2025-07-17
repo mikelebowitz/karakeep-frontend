@@ -1,11 +1,13 @@
-import { Admin, Resource, Layout } from 'react-admin';
+import { Admin, Resource, Layout, CustomRoutes } from 'react-admin';
 import type { LayoutProps } from 'react-admin';
+import { Route } from 'react-router-dom';
 import { BookmarkBorder } from '@mui/icons-material';
 import daisyuiTheme from './theme/daisyuiTheme';
 import { dataProvider } from './providers/dataProvider';
 import { authProvider } from './providers/authProvider';
 import { LoginPage } from './pages/Login';
 import { BookmarkList, BookmarkEdit, BookmarkCreate } from './pages/bookmarks';
+import { TriageMode } from './pages/triage';
 import { KeyboardShortcuts } from './components/KeyboardShortcuts';
 
 const MyLayout = (props: LayoutProps) => {
@@ -55,6 +57,10 @@ function App() {
         create={ListCreate}
         icon={FolderOutlined}
       /> */}
+      
+      <CustomRoutes>
+        <Route path="/triage" element={<TriageMode />} />
+      </CustomRoutes>
     </Admin>
   );
 }
