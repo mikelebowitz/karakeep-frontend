@@ -60,14 +60,12 @@ const daisyuiTheme = deepmerge(defaultTheme, {
     },
   },
   typography: {
+    // Following React-Admin patterns for Inter font
     fontFamily: [
-      '"Inter Variable"',
       'Inter',
       '-apple-system',
       'BlinkMacSystemFont',
       '"Segoe UI"',
-      'Roboto',
-      '"Helvetica Neue"',
       'Arial',
       'sans-serif',
     ].join(','),

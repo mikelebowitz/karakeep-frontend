@@ -1,20 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 @import "tailwindcss";
 
-/* Inter Variable font CSS custom properties */
-@supports (font-variation-settings: normal) {
-  :root {
-    --font-inter: 'Inter Variable', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-  }
-}
-
-/* Apply Inter Variable globally */
+/* Apply Inter font globally following React-Admin patterns */
 html,
 body,
 #root {
-  font-family: var(--font-inter, 'Inter', system-ui, sans-serif);
-  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
-  font-variation-settings: 'opsz' 16;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
   margin: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

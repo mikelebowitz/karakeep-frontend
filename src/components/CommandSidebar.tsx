@@ -45,11 +45,11 @@ export const CommandSidebar = ({
                   <div
                     key={list.id}
                     className={`
-                      flex items-center gap-3 p-2 rounded-lg cursor-pointer
+                      flex items-center gap-3 p-3 rounded-lg cursor-pointer
                       transition-all duration-200
                       ${isSelected 
-                        ? 'bg-primary/20 border-2 border-primary' 
-                        : 'bg-base-200 hover:bg-base-300 border-2 border-transparent'
+                        ? 'bg-primary text-primary-content border border-primary' 
+                        : 'bg-base-200 hover:bg-base-300 border border-base-300'
                       }
                     `}
                     onClick={() => onListToggle(index)}
@@ -67,11 +67,11 @@ export const CommandSidebar = ({
                     <span className="text-xl" role="img" aria-label={list.name}>
                       {list.icon || '📁'}
                     </span>
-                    <span className={`flex-1 text-sm ${isSelected ? 'font-semibold text-base-content' : 'text-base-content/80'}`}>
+                    <span className={`flex-1 text-sm ${isSelected ? 'font-semibold text-primary-content' : 'text-base-content/80'}`}>
                       {list.name}
                     </span>
                     {isSelected && (
-                      <span className="badge badge-primary badge-xs">Selected</span>
+                      <span className="text-primary-content text-xs">✓</span>
                     )}
                   </div>
                 );

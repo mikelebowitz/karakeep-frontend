@@ -252,12 +252,64 @@ export const TriageMode = () => {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [handleKeyPress]);
   
-  // Loading state
+  // Loading state with DaisyUI skeletons
   if (triageState.isLoading) {
     return (
-      <div className="container mx-auto px-6 py-8">
-        <div className="flex justify-center items-center h-96">
-          <span className="loading loading-spinner loading-lg"></span>
+      <div className="min-h-screen flex flex-col">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex-1 flex flex-col">
+          {/* Header skeleton */}
+          <div className="flex justify-between items-center mb-4">
+            <div className="skeleton h-8 w-48"></div>
+            <div className="skeleton h-8 w-24"></div>
+          </div>
+          
+          {/* Keyboard commands skeleton */}
+          <div className="skeleton h-16 w-full mb-4"></div>
+          
+          <div className="flex gap-4 flex-1 min-h-0">
+            {/* Bookmark card skeleton */}
+            <div className="flex-1 flex items-center justify-center px-2">
+              <div className="w-full max-w-2xl">
+                <div className="card bg-base-100 border border-base-300">
+                  <div className="card-body">
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="skeleton w-8 h-8 rounded-full shrink-0"></div>
+                      <div className="flex-1">
+                        <div className="skeleton h-6 w-3/4 mb-2"></div>
+                        <div className="skeleton h-4 w-1/2"></div>
+                      </div>
+                    </div>
+                    <div className="skeleton h-4 w-full mb-2"></div>
+                    <div className="skeleton h-4 w-4/5 mb-2"></div>
+                    <div className="skeleton h-4 w-2/3 mb-4"></div>
+                    <div className="flex gap-2">
+                      <div className="skeleton h-6 w-16"></div>
+                      <div className="skeleton h-6 w-20"></div>
+                      <div className="skeleton h-6 w-14"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Sidebar skeleton */}
+            <div className="w-64 flex-shrink-0">
+              <div className="card bg-base-100 border border-base-300 h-full">
+                <div className="card-body">
+                  <div className="skeleton h-6 w-32 mb-4"></div>
+                  <div className="space-y-3">
+                    {[...Array(8)].map((_, i) => (
+                      <div key={i} className="flex items-center gap-3">
+                        <div className="skeleton w-6 h-6 rounded"></div>
+                        <div className="skeleton w-6 h-6 rounded-full"></div>
+                        <div className="skeleton h-4 flex-1"></div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -283,7 +335,7 @@ export const TriageMode = () => {
   
   return (
     <div className="min-h-screen flex flex-col">
-      <div className="container mx-auto px-6 py-4 flex-1 flex flex-col">
+      <div className="max-w-7xl mx-auto px-4 py-3 flex-1 flex flex-col">
         <TriageHeader
           current={triageState.currentIndex + 1}
           total={triageState.bookmarks.length}
@@ -293,19 +345,21 @@ export const TriageMode = () => {
         
         <KeyboardCommandBar keyboardConfig={keyboardConfig} />
         
-        <div className="flex gap-6 flex-1 overflow-hidden">
+        <div className="flex gap-4 flex-1 min-h-0">
           {/* Bookmark Card */}
-          <div className="flex-1 flex items-center justify-center">
+          <div className="flex-1 flex items-center justify-center px-2">
             {currentBookmark && (
-              <BookmarkCard 
-                bookmark={currentBookmark}
-                isProcessing={triageState.isProcessing}
-              />
+              <div className="w-full max-w-2xl">
+                <BookmarkCard 
+                  bookmark={currentBookmark}
+                  isProcessing={triageState.isProcessing}
+                />
+              </div>
             )}
           </div>
           
           {/* Command Sidebar */}
-          <div className="w-80 flex-shrink-0">
+          <div className="w-64 flex-shrink-0">
             <CommandSidebar
               lists={availableLists}
               selectedLists={triageState.selectedLists}

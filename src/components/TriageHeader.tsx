@@ -12,13 +12,13 @@ export const TriageHeader = ({ current, total, completed, onQuit }: TriageHeader
   
   return (
     <div className="card bg-base-100 border border-base-300 mb-4">
-      <div className="card-body py-4">
+      <div className="card-body py-3">
         <div className="flex justify-between items-center">
-          {/* Title and Progress */}
+          {/* Title and Status */}
           <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold text-base-content">Triage Mode</h1>
+            <h1 className="text-xl font-semibold text-base-content">Triage Mode</h1>
             <div className="flex items-center gap-3">
-              <span className="text-base font-medium text-base-content">
+              <span className="text-sm font-normal text-base-content">
                 {current} of {total} remaining
               </span>
               {completed > 0 && (
@@ -32,13 +32,13 @@ export const TriageHeader = ({ current, total, completed, onQuit }: TriageHeader
           {/* Progress bar and quit button */}
           <div className="flex items-center gap-4">
             <div className="flex flex-col items-end">
-              <div className="text-xs text-base-content/70 mb-1">
+              <div className="text-xs text-base-content/60 mb-1 font-normal">
                 {percentage}% complete
               </div>
-              <div className="w-32">
+              <div className="w-40">
                 <progress 
-                  className="progress progress-primary w-full" 
-                  value={current} 
+                  className="progress progress-primary w-full h-2" 
+                  value={completed} 
                   max={total}
                 ></progress>
               </div>
@@ -46,15 +46,16 @@ export const TriageHeader = ({ current, total, completed, onQuit }: TriageHeader
             
             <button 
               onClick={onQuit}
-              className="btn btn-ghost btn-circle"
+              className="btn btn-ghost btn-sm btn-circle"
+              title="Quit triage mode"
             >
-              <Close />
+              <Close fontSize="small" />
             </button>
           </div>
         </div>
         
         {/* Quick instructions */}
-        <div className="mt-2 text-xs text-base-content/60">
+        <div className="mt-3 text-xs text-base-content/50 font-normal">
           Use smart keys to select lists, <kbd className="kbd kbd-xs">⌘↩</kbd> to apply, 
           <kbd className="kbd kbd-xs">esc</kbd> to skip, <kbd className="kbd kbd-xs">q</kbd> to quit
         </div>

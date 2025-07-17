@@ -120,8 +120,8 @@ export const BookmarkList = () => {
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold">Bookmarks</h1>
-          <p className="text-base-content/70 mt-1">
+          <h1 className="text-2xl font-semibold text-base-content">Bookmarks</h1>
+          <p className="text-sm text-base-content/70 mt-1">
             {state.total > 0 ? `${state.total} total bookmarks` : 'No bookmarks found'}
           </p>
         </div>
@@ -155,19 +155,19 @@ export const BookmarkList = () => {
       <div className="overflow-x-auto">
         <table className="table table-zebra w-full">
           <thead>
-            <tr>
-              <th className="w-16">Favicon</th>
-              <th>Title</th>
-              <th className="w-48">Tags</th>
-              <th className="w-32">Created</th>
-              <th className="w-24">Actions</th>
+            <tr className="bg-base-200">
+              <th className="w-16 py-3"></th>
+              <th className="text-xs font-medium text-base-content/80 py-3 text-left uppercase tracking-wide">Title</th>
+              <th className="w-48 text-xs font-medium text-base-content/80 py-3 text-left uppercase tracking-wide">Tags</th>
+              <th className="w-32 text-xs font-medium text-base-content/80 py-3 text-left uppercase tracking-wide">Created</th>
+              <th className="w-24 text-xs font-medium text-base-content/80 py-3 text-left uppercase tracking-wide">Actions</th>
             </tr>
           </thead>
           <tbody>
             {state.bookmarks.map((bookmark) => (
               <tr key={bookmark.id} className="hover">
                 {/* Favicon */}
-                <td>
+                <td className="py-4 px-3 align-middle">
                   <Avatar 
                     src={bookmark.content?.favicon} 
                     sx={{ width: 24, height: 24 }}
@@ -178,16 +178,16 @@ export const BookmarkList = () => {
                 </td>
                 
                 {/* Title */}
-                <td>
+                <td className="py-4 px-3 align-top">
                   <div>
-                    <div className="font-semibold text-sm">
+                    <div className="font-medium text-sm leading-5 text-base-content">
                       {bookmark.title || bookmark.content?.title || 'No title'}
                     </div>
-                    <div className="text-xs text-base-content/70">
+                    <div className="text-xs text-base-content/60 mt-1 font-normal">
                       {extractDomain(bookmark.content?.url || '')}
                     </div>
                     {bookmark.content?.description && (
-                      <div className="text-xs text-base-content/60 mt-1 line-clamp-2">
+                      <div className="text-xs text-base-content/50 mt-1 line-clamp-2 leading-4 font-normal">
                         {bookmark.content.description}
                       </div>
                     )}
@@ -195,38 +195,38 @@ export const BookmarkList = () => {
                 </td>
                 
                 {/* Tags */}
-                <td>
+                <td className="py-4 px-3 align-middle">
                   <div className="flex flex-wrap gap-1">
                     {bookmark.tags?.slice(0, 3).map((tag: any) => (
-                      <div
+                      <span
                         key={tag.id}
-                        className={`badge badge-sm ${
+                        className={`badge badge-xs ${
                           tag.attachedBy === 'ai' 
                             ? 'badge-primary' 
                             : 'badge-outline'
                         }`}
                       >
                         {tag.name}
-                      </div>
+                      </span>
                     ))}
                     {bookmark.tags?.length > 3 && (
-                      <div className="badge badge-sm badge-ghost">
+                      <span className="badge badge-xs badge-ghost">
                         +{bookmark.tags.length - 3}
-                      </div>
+                      </span>
                     )}
                   </div>
                 </td>
                 
                 {/* Created Date */}
-                <td>
-                  <div className="text-xs text-base-content/70">
+                <td className="py-4 px-3 align-middle">
+                  <div className="text-xs text-base-content/60 font-normal">
                     {new Date(bookmark.createdAt).toLocaleDateString()}
                   </div>
                 </td>
                 
                 {/* Actions */}
-                <td>
-                  <div className="flex flex-col gap-1">
+                <td className="py-4 px-3 align-middle">
+                  <div className="flex gap-1">
                     <button 
                       onClick={() => handleEdit(bookmark.id)}
                       className="btn btn-xs btn-outline"

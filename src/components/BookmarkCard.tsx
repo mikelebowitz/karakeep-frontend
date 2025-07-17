@@ -55,10 +55,10 @@ export const BookmarkCard = ({ bookmark, isProcessing }: BookmarkCardProps) => {
             <Bookmark />
           </Avatar>
           <div className="flex-1">
-            <h2 className="card-title text-2xl mb-1">
+            <h2 className="text-lg font-semibold text-base-content leading-6 mb-1">
               {bookmark.content?.title || bookmark.title || 'Untitled'}
             </h2>
-            <p className="text-base-content/70">
+            <p className="text-sm text-base-content/60 font-normal">
               {domain}
             </p>
           </div>
@@ -67,7 +67,7 @@ export const BookmarkCard = ({ bookmark, isProcessing }: BookmarkCardProps) => {
         {/* Description */}
         {bookmark.content?.description && (
           <div className="mb-4">
-            <p className="text-base-content/80 leading-relaxed">
+            <p className="text-sm text-base-content/70 leading-relaxed font-normal">
               {bookmark.content.description}
             </p>
           </div>
@@ -95,20 +95,20 @@ export const BookmarkCard = ({ bookmark, isProcessing }: BookmarkCardProps) => {
         {bookmark.tags && bookmark.tags.length > 0 && (
           <div className="mt-4">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-sm font-semibold">Tags:</span>
+              <span className="text-xs font-medium text-base-content/70 uppercase tracking-wide">Tags:</span>
             </div>
             <div className="flex flex-wrap gap-2">
               {bookmark.tags.map((tag: any) => (
-                <div
+                <span
                   key={tag.id}
-                  className={`badge ${
+                  className={`badge badge-sm ${
                     tag.attachedBy === 'ai' 
                       ? 'badge-primary' 
                       : 'badge-outline'
                   }`}
                 >
                   {tag.name}
-                </div>
+                </span>
               ))}
             </div>
           </div>
