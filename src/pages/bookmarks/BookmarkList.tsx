@@ -2,7 +2,6 @@ import { memo } from 'react';
 import {
   List,
   Datagrid,
-  BooleanField,
   DateField,
   EditButton,
   DeleteButton,
@@ -15,11 +14,51 @@ import {
   useRecordContext,
   useListContext,
 } from 'react-admin';
-import { Box, Avatar } from '@mui/material';
+import { Box, Avatar, Stack } from '@mui/material';
 import { Bookmark } from '@mui/icons-material';
 import ChevronLeft from '@mui/icons-material/ChevronLeft';
 import ChevronRight from '@mui/icons-material/ChevronRight';
-import { BookmarkBulkActions } from '../../components/BatchActions';
+
+// Utility function to extract domain from URL
+const extractDomain = (url: string): string => {
+  if (!url) return '';
+  
+  try {
+    // Remove protocol if present
+    const cleanUrl = url.replace(/^https?:\/\//, '');
+    // Remove www. if present
+    const withoutWww = cleanUrl.replace(/^www\./, '');
+    // Extract domain (everything before the first slash)
+    const domain = withoutWww.split('/')[0];
+    // Remove port if present
+    return domain.split(':')[0];
+  } catch {
+    // If URL parsing fails, return the original URL truncated
+    return url.substring(0, 30) + (url.length > 30 ? '...' : '');
+  }
+};
+
+// Combined Actions component for Edit/Delete buttons (stacked vertically)
+const ActionsColumn = () => (
+  <Stack direction="column" spacing={0.1} justifyContent="center" alignItems="center">
+    <EditButton 
+      size="small" 
+      sx={{ 
+        minHeight: '20px', 
+        padding: '2px 6px', 
+        fontSize: '0.7rem',
+      }} 
+    />
+    <DeleteButton 
+      size="small" 
+      sx={{ 
+        minHeight: '20px', 
+        padding: '2px 6px', 
+        fontSize: '0.7rem',
+      }} 
+    />
+  </Stack>
+);
 
 const BookmarkFilters = [
   <TextInput source="q" label="Search" alwaysOn />,
@@ -179,10 +218,34 @@ const BookmarkDatagrid = () => {
       key={`datagrid-page-${page}-${Date.now()}`} // Force re-render on page change
       expand={BookmarkPanel}
       rowClick="expand"
-      bulkActionButtons={<BookmarkBulkActions />}
+      bulkActionButtons={false} // Remove bulk actions to fix spacing
+      sx={{
+        width: '100%',
+        tableLayout: 'auto', // Changed from 'fixed' to 'auto' for better flex behavior
+        '& .RaDatagrid-tableWrapper': {
+          overflowX: 'auto',
+        },
+        '& table': {
+          width: '100%',
+          minWidth: '600px', // Ensure minimum usable width
+        },
+        // React-Admin responsive column hiding using auto-generated column classes
+        '& .column-tags': {
+          display: { xs: 'none', md: 'table-cell' },
+        },
+        '& .column-createdAt': {
+          display: { xs: 'none', sm: 'table-cell' },
+        },
+      }}
     >
       <FunctionField
         label="Favicon"
+        sx={{
+          width: '8%',
+          minWidth: '50px',
+          maxWidth: '60px',
+          padding: '8px 4px',
+        }}
         render={(record: any) => (
           <Avatar src={record.content?.favicon} sx={{ width: 24, height: 24 }}>
             <Bookmark fontSize="small" />
@@ -191,43 +254,93 @@ const BookmarkDatagrid = () => {
       />
       <FunctionField
         label="Title"
+        sx={{
+          width: '50%', // Use percentage for flexible width
+          minWidth: '200px',
+          padding: '8px 12px',
+          '& .MuiTableCell-root': {
+            whiteSpace: 'normal',
+            wordBreak: 'break-word',
+            overflow: 'hidden',
+          },
+        }}
         render={(record: any) => (
           <Box>
-            <p className="text-sm font-medium truncate">
+            <p style={{ 
+              fontSize: '0.875rem', 
+              fontWeight: 500, 
+              margin: 0, 
+              lineHeight: '1.4',
+              color: '#111827'
+            }}>
               {record.title || record.content?.title || 'No title'}
             </p>
-            <p className="text-xs text-base-content/70 truncate">
-              {record.content?.url}
+            <p style={{ 
+              fontSize: '0.75rem', 
+              margin: 0, 
+              marginTop: '2px',
+              lineHeight: '1.3',
+              color: '#6b7280',
+              textOverflow: 'ellipsis',
+              overflow: 'hidden',
+              whiteSpace: 'nowrap'
+            }}>
+              {extractDomain(record.content?.url || '')}
             </p>
           </Box>
         )}
       />
       <FunctionField
         label="Tags"
+        source="tags"
+        sx={{
+          width: '20%',
+          minWidth: '100px',
+          maxWidth: '180px',
+          padding: '8px 12px',
+        }}
         render={(record: any) => (
           <Box display="flex" gap={0.5} flexWrap="wrap">
-            {record.tags?.slice(0, 3).map((tag: any) => (
+            {record.tags?.slice(0, 2).map((tag: any) => (
               <span
                 key={tag.id}
                 className={`badge badge-xs ${
                   tag.attachedBy === 'ai' ? 'badge-primary' : 'badge-outline'
                 }`}
+                style={{ fontSize: '0.7rem' }}
               >
                 {tag.name}
               </span>
             ))}
-            {record.tags?.length > 3 && (
-              <span className="badge badge-xs badge-outline">
-                +{record.tags.length - 3}
+            {record.tags?.length > 2 && (
+              <span className="badge badge-xs badge-outline" style={{ fontSize: '0.7rem' }}>
+                +{record.tags.length - 2}
               </span>
             )}
           </Box>
         )}
       />
-      <BooleanField source="archived" />
-      <DateField source="createdAt" showTime />
-      <EditButton />
-      <DeleteButton />
+      <DateField 
+        source="createdAt" 
+        showTime 
+        sx={{
+          width: '12%',
+          minWidth: '100px',
+          maxWidth: '120px',
+          padding: '8px 8px',
+          fontSize: '0.75rem',
+        }}
+      />
+      <FunctionField
+        label="Actions"
+        render={() => <ActionsColumn />}
+        sx={{
+          width: '80px',
+          minWidth: '80px',
+          maxWidth: '80px',
+          padding: '4px',
+        }}
+      />
     </Datagrid>
   );
 };

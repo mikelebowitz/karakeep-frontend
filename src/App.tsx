@@ -1,21 +1,18 @@
-import React from 'react';
 import { Admin, Resource, Layout } from 'react-admin';
 import type { LayoutProps } from 'react-admin';
-import { BookmarkBorder, Label, FolderOutlined } from '@mui/icons-material';
+import { BookmarkBorder } from '@mui/icons-material';
 import daisyuiTheme from './theme/daisyuiTheme';
 import { dataProvider } from './providers/dataProvider';
 import { authProvider } from './providers/authProvider';
 import { LoginPage } from './pages/Login';
 import { BookmarkList, BookmarkEdit, BookmarkCreate } from './pages/bookmarks';
-import { TagList, TagEdit, TagCreate } from './pages/tags';
-import { ListList, ListEdit, ListCreate } from './pages/lists';
 import { KeyboardShortcuts } from './components/KeyboardShortcuts';
 
 const MyLayout = (props: LayoutProps) => {
   return (
     <>
       <KeyboardShortcuts />
-      <Layout {...props} />
+      <Layout {...props} sidebar={() => null} />
     </>
   );
 };

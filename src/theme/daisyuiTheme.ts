@@ -130,57 +130,112 @@ const daisyuiTheme = deepmerge(defaultTheme, {
   },
   spacing: 12,                // Larger spacing throughout (1.5rem base instead of 0.5rem)
   components: {
-    // React-Admin Datagrid - using correct component name and CSS classes from documentation
+    // Global styles
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          margin: 0,
+          padding: 0,
+          width: '100%',
+          height: '100%',
+        },
+        '#root': {
+          width: '100%',
+          height: '100%',
+        },
+        '.RaLayout-appFrame': {
+          width: '100%',
+          height: '100%',
+        },
+      },
+    },
+    // React-Admin Datagrid - basic styling without complex overrides
     RaDatagrid: {
       styleOverrides: {
         root: {
           backgroundColor: '#ffffff',
-          borderRadius: '1.5rem',
-          border: '2px solid #e5e7eb',
-          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
+          borderRadius: '0.5rem',
+          border: '1px solid #e5e7eb',
+          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
           overflow: 'hidden',
-          fontSize: '1.125rem',
-          // Target documented CSS classes
           '& .RaDatagrid-headerCell': {
-            backgroundColor: '#570df8 !important',  // DaisyUI primary with !important
-            color: '#ffffff !important',            // White text
-            fontWeight: '800 !important',
-            padding: '1.5rem 1.25rem !important',
-            fontSize: '1rem !important',
-            textTransform: 'uppercase',
-            letterSpacing: '0.1em',
-            borderBottom: '3px solid #4c1d95 !important',
+            backgroundColor: '#570df8',
+            color: '#ffffff',
+            fontWeight: 600,
+            fontSize: '0.875rem',
+            padding: '0.75rem 0.5rem',
           },
           '& .RaDatagrid-rowCell': {
-            padding: '1.5rem 1.25rem !important',
-            fontSize: '1rem !important',
-            lineHeight: 1.7,
+            padding: '0.75rem 0.5rem',
             borderBottom: '1px solid #f3f4f6',
           },
           '& .RaDatagrid-row': {
             '&:hover': {
-              backgroundColor: '#ede9fe !important',
-              transform: 'scale(1.01)',
-              transition: 'all 0.2s ease-in-out',
+              backgroundColor: '#f9fafb',
             },
           },
-          '& .RaDatagrid-rowEven': {
-            backgroundColor: '#f9fafb',
+        },
+      },
+    },
+    // React-Admin List styling
+    RaList: {
+      styleOverrides: {
+        root: {
+          width: '100%',
+          maxWidth: 'none',
+          '& .RaList-main': {
+            backgroundColor: 'transparent',
+            width: '100%',
+            maxWidth: 'none',
+            margin: 0,
+            padding: 0,
           },
-          '& .RaDatagrid-rowOdd': {
-            backgroundColor: '#ffffff',
+          '& .RaList-content': {
+            width: '100%',
+            maxWidth: 'none',
           },
-          '& .RaDatagrid-expandIcon': {
-            color: '#570df8',
-            fontSize: '1.5rem',
+        },
+      },
+    },
+    // Layout styling for full width without sidebar
+    RaLayout: {
+      styleOverrides: {
+        root: {
+          '& .RaLayout-content': {
+            marginLeft: 0,
+            width: '100%',
+            maxWidth: 'none',
+            padding: '1rem',
           },
-          '& .RaDatagrid-clickableRow': {
-            cursor: 'pointer',
-            '&:hover': {
-              backgroundColor: '#ede9fe !important',
-              transform: 'scale(1.01)',
-            },
+          '& .RaLayout-contentWithSidebar': {
+            marginLeft: 0,
+            width: '100%',
+            maxWidth: 'none',
           },
+        },
+      },
+    },
+    // Main content area styling
+    RaMain: {
+      styleOverrides: {
+        root: {
+          width: '100%',
+          maxWidth: 'none',
+          margin: 0,
+          padding: '1rem',
+        },
+      },
+    },
+    // Filter form styling
+    RaFilterForm: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#ffffff',
+          border: '1px solid #e5e7eb',
+          borderRadius: '0.5rem',
+          padding: '1rem',
+          margin: '1rem 0',
+          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
         },
       },
     },
@@ -232,41 +287,6 @@ const daisyuiTheme = deepmerge(defaultTheme, {
         },
       },
     },
-    // Table styling for React-Admin Datagrid
-    MuiTableHead: {
-      styleOverrides: {
-        root: {
-          backgroundColor: '#f9fafb',     // DaisyUI base-200
-        },
-      },
-    },
-    MuiTableCell: {
-      styleOverrides: {
-        head: {
-          fontWeight: 600,
-          color: '#374151',               // DaisyUI base-content
-          borderBottom: '2px solid #e5e7eb',
-        },
-        body: {
-          borderBottom: '1px solid #f3f4f6',
-        },
-      },
-    },
-    MuiTableRow: {
-      styleOverrides: {
-        root: {
-          '&:hover': {
-            backgroundColor: '#f9fafb',   // DaisyUI base-200
-          },
-          '&.Mui-selected': {
-            backgroundColor: '#ede9fe',   // DaisyUI primary with low opacity
-            '&:hover': {
-              backgroundColor: '#ddd6fe',
-            },
-          },
-        },
-      },
-    },
     // Chip styling to match DaisyUI badges
     MuiChip: {
       styleOverrides: {
@@ -298,11 +318,12 @@ const daisyuiTheme = deepmerge(defaultTheme, {
         },
       },
     },
-    // Input styling
+    // Input styling - better form input appearance
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
           borderRadius: '0.5rem',
+          backgroundColor: '#ffffff',
           '& .MuiOutlinedInput-notchedOutline': {
             borderColor: '#d1d5db',
           },
@@ -310,8 +331,44 @@ const daisyuiTheme = deepmerge(defaultTheme, {
             borderColor: '#9ca3af',
           },
           '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-            borderColor: '#570df8',       // DaisyUI primary
+            borderColor: '#570df8',
             borderWidth: '2px',
+          },
+        },
+      },
+    },
+    MuiFilledInput: {
+      styleOverrides: {
+        root: {
+          borderRadius: '0.5rem',
+          backgroundColor: '#f9fafb',
+          border: '1px solid #e5e7eb',
+          '&:hover': {
+            backgroundColor: '#f3f4f6',
+          },
+          '&.Mui-focused': {
+            backgroundColor: '#ffffff',
+            borderColor: '#570df8',
+          },
+          '&:before': {
+            borderBottom: 'none',
+          },
+          '&:after': {
+            borderBottom: 'none',
+          },
+        },
+      },
+    },
+    // Search filter styling
+    MuiFormControl: {
+      styleOverrides: {
+        root: {
+          margin: '0.5rem',
+          '& .MuiInputLabel-root': {
+            color: '#6b7280',
+          },
+          '& .MuiInputLabel-root.Mui-focused': {
+            color: '#570df8',
           },
         },
       },
@@ -324,86 +381,17 @@ const daisyuiTheme = deepmerge(defaultTheme, {
           color: '#1f2937',
           boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
           borderBottom: '1px solid #e5e7eb',
+          width: '100%',
         },
       },
     },
-    // Material-UI Table components that React-Admin uses
-    MuiTable: {
+    // Container styling - remove max-width constraints
+    MuiContainer: {
       styleOverrides: {
         root: {
-          backgroundColor: '#ffffff',
-          borderRadius: '1.5rem',
-          border: '2px solid #e5e7eb',
-          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
-          overflow: 'hidden',
-          fontSize: '1.125rem',
-        },
-      },
-    },
-    MuiTableContainer: {
-      styleOverrides: {
-        root: {
-          borderRadius: '1.5rem',
-          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
-          border: '2px solid #e5e7eb',
-        },
-      },
-    },
-    // Material-UI Table Header - this is what React-Admin actually uses for headers
-    MuiTableHead: {
-      styleOverrides: {
-        root: {
-          backgroundColor: '#570df8',  // DaisyUI primary
-          '& .MuiTableCell-head': {
-            backgroundColor: '#570df8 !important',
-            color: '#ffffff !important',
-            fontWeight: '800 !important',
-            fontSize: '1rem !important',
-            textTransform: 'uppercase',
-            letterSpacing: '0.1em',
-            padding: '1.5rem 1.25rem !important',
-            borderBottom: '3px solid #4c1d95 !important',
-          },
-        },
-      },
-    },
-    // Material-UI Table Cell - target both header and body cells
-    MuiTableCell: {
-      styleOverrides: {
-        root: {
-          fontSize: '1rem',
-          padding: '1rem 1.25rem',
-        },
-        head: {
-          backgroundColor: '#570df8 !important',
-          color: '#ffffff !important',
-          fontWeight: '800 !important',
-          fontSize: '1rem !important',
-          textTransform: 'uppercase',
-          letterSpacing: '0.1em',
-          padding: '1.5rem 1.25rem !important',
-          borderBottom: '3px solid #4c1d95 !important',
-        },
-        body: {
-          padding: '1.5rem 1.25rem !important',
-          fontSize: '1rem !important',
-          lineHeight: 1.7,
-          borderBottom: '1px solid #f3f4f6',
-        },
-      },
-    },
-    // Material-UI Table Row - for hover effects
-    MuiTableRow: {
-      styleOverrides: {
-        root: {
-          '&:hover': {
-            backgroundColor: '#ede9fe !important',
-            transform: 'scale(1.005)',
-            transition: 'all 0.2s ease-in-out',
-          },
-          '&:nth-of-type(even)': {
-            backgroundColor: '#f9fafb',
-          },
+          maxWidth: 'none !important',
+          width: '100%',
+          padding: '0 1rem',
         },
       },
     },

@@ -277,9 +277,45 @@ class KarakeepDataProvider implements DataProvider {
   }
 
   async getMany(resource: string, params: GetManyParams) {
-    const query = { ids: params.ids.join(',') };
-    const { data } = await this.httpClient.get(`/${resource}/many`, { params: query });
-    return { data };
+    console.log('🔍 getMany called for resource:', resource, 'with IDs:', params.ids);
+    
+    // Handle tags - call GET /tags and filter by requested IDs
+    if (resource === 'tags') {
+      try {
+        const { data } = await this.httpClient.get('/tags');
+        console.log('✅ Got tags data:', data);
+        const filteredTags = data.tags.filter((tag: any) => params.ids.includes(tag.id));
+        console.log('✅ Filtered tags:', filteredTags);
+        return { data: filteredTags };
+      } catch (error) {
+        console.error('❌ Error fetching tags:', error);
+        return { data: [] };
+      }
+    }
+    
+    // Handle lists - call GET /lists and filter by requested IDs
+    if (resource === 'lists') {
+      try {
+        const { data } = await this.httpClient.get('/lists');
+        console.log('✅ Got lists data:', data);
+        const filteredLists = data.lists.filter((list: any) => params.ids.includes(list.id));
+        console.log('✅ Filtered lists:', filteredLists);
+        return { data: filteredLists };
+      } catch (error) {
+        console.error('❌ Error fetching lists:', error);
+        return { data: [] };
+      }
+    }
+    
+    // Fallback for other resources (if they have /many endpoints)
+    try {
+      const query = { ids: params.ids.join(',') };
+      const { data } = await this.httpClient.get(`/${resource}/many`, { params: query });
+      return { data };
+    } catch (error) {
+      console.error(`❌ Error fetching ${resource}/many:`, error);
+      return { data: [] };
+    }
   }
 
   async getManyReference(resource: string, params: GetManyReferenceParams) {

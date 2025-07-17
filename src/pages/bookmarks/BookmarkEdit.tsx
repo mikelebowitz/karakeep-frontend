@@ -3,9 +3,6 @@ import {
   SimpleForm,
   TextInput,
   BooleanInput,
-  ReferenceArrayInput,
-  AutocompleteArrayInput,
-  required,
   useNotify,
   useRefresh,
   useRedirect,
@@ -14,6 +11,8 @@ import {
   DeleteButton,
 } from 'react-admin';
 import { Box, Card, CardContent } from '@mui/material';
+import { TagSelector } from '../../components/TagSelector';
+import { ListSelector } from '../../components/ListSelector';
 
 const BookmarkEditToolbar = () => (
   <Toolbar>
@@ -21,6 +20,7 @@ const BookmarkEditToolbar = () => (
     <DeleteButton />
   </Toolbar>
 );
+
 
 export const BookmarkEdit = () => {
   const notify = useNotify();
@@ -34,35 +34,26 @@ export const BookmarkEdit = () => {
   };
 
   return (
-    <Edit mutationOptions={{ onSuccess }}>
+    <Edit mutationOptions={{ onSuccess }} title="Edit Bookmark">
       <SimpleForm toolbar={<BookmarkEditToolbar />}>
         <Card sx={{ width: '100%' }}>
           <CardContent>
-            <TextInput source="url" validate={required()} fullWidth />
-            <TextInput source="title" validate={required()} fullWidth />
-            <TextInput source="description" multiline rows={3} fullWidth />
+            {/* Basic bookmark fields - using correct nested structure from API */}
+            <TextInput source="content.url" label="URL" fullWidth />
+            <TextInput source="content.title" label="Title" fullWidth />
+            <TextInput source="content.description" label="Description" multiline rows={3} fullWidth />
+            <TextInput source="note" label="Note" multiline rows={2} fullWidth />
+            <TextInput source="summary" label="Summary" multiline rows={2} fullWidth />
             
-            <Box mt={2}>
-              <ReferenceArrayInput source="tags" reference="tags">
-                <AutocompleteArrayInput
-                  optionText="name"
-                  fullWidth
-                />
-              </ReferenceArrayInput>
+            {/* Boolean fields - on same line */}
+            <Box mt={2} display="flex" gap={3}>
+              <BooleanInput source="archived" label="Archived" />
+              <BooleanInput source="favourited" label="Favourited" />
             </Box>
-
-            <Box mt={2}>
-              <ReferenceArrayInput source="lists" reference="lists">
-                <AutocompleteArrayInput
-                  optionText="name"
-                  fullWidth
-                />
-              </ReferenceArrayInput>
-            </Box>
-
-            <Box mt={2}>
-              <BooleanInput source="is_archived" />
-            </Box>
+            
+            {/* Tags and Lists - using custom components */}
+            <TagSelector source="tags" label="Tags" />
+            <ListSelector source="lists" label="Lists" />
           </CardContent>
         </Card>
       </SimpleForm>
