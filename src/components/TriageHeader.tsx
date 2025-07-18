@@ -11,7 +11,7 @@ export const TriageHeader = ({ current, total, completed, onQuit }: TriageHeader
   const percentage = total > 0 ? Math.round((current / total) * 100) : 0;
   
   return (
-    <div className="card bg-base-100 border border-base-300 mb-4">
+    <div className="card bg-base-100 shadow-sm mb-4">
       <div className="card-body py-3">
         <div className="flex justify-between items-center">
           {/* Title and Status */}

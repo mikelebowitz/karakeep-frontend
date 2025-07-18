@@ -116,7 +116,7 @@ export const BookmarkList = () => {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 w-full">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
@@ -144,43 +144,52 @@ export const BookmarkList = () => {
 
       {/* Search */}
       <div className="mb-6">
-        <input 
-          type="text" 
-          placeholder="Search bookmarks..." 
-          className="input input-bordered w-full max-w-md"
-        />
+        <div className="relative max-w-md">
+          <input 
+            type="text" 
+            placeholder="Search bookmarks..." 
+            className="input input-bordered input-lg w-full pl-4 pr-4 shadow-sm focus:shadow-md transition-shadow"
+          />
+          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+            <svg className="w-5 h-5 text-base-content/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+        </div>
       </div>
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="table table-zebra w-full">
+        <table className="table table-zebra w-full min-w-full hover:table-hover">
           <thead>
             <tr className="bg-base-200">
-              <th className="w-16 py-3"></th>
-              <th className="text-xs font-medium text-base-content/80 py-3 text-left uppercase tracking-wide">Title</th>
-              <th className="w-48 text-xs font-medium text-base-content/80 py-3 text-left uppercase tracking-wide">Tags</th>
-              <th className="w-32 text-xs font-medium text-base-content/80 py-3 text-left uppercase tracking-wide">Created</th>
-              <th className="w-24 text-xs font-medium text-base-content/80 py-3 text-left uppercase tracking-wide">Actions</th>
+              <th className="w-16 py-3 px-3"></th>
+              <th className="text-xs font-medium text-base-content/80 py-3 px-3 text-left uppercase tracking-wide">Title</th>
+              <th className="w-48 text-xs font-medium text-base-content/80 py-3 px-3 text-left uppercase tracking-wide">Tags</th>
+              <th className="w-32 text-xs font-medium text-base-content/80 py-3 px-3 text-left uppercase tracking-wide">Created</th>
+              <th className="w-24 text-xs font-medium text-base-content/80 py-3 px-3 text-left uppercase tracking-wide">Actions</th>
             </tr>
           </thead>
           <tbody>
             {state.bookmarks.map((bookmark) => (
               <tr key={bookmark.id} className="hover">
                 {/* Favicon */}
-                <td className="py-4 px-3 align-middle">
-                  <Avatar 
-                    src={bookmark.content?.favicon} 
-                    sx={{ width: 24, height: 24 }}
-                    className="rounded"
-                  >
-                    <Bookmark fontSize="small" />
-                  </Avatar>
+                <td className="py-5 px-3 align-top">
+                  <div className="mt-1">
+                    <Avatar 
+                      src={bookmark.content?.favicon} 
+                      sx={{ width: 24, height: 24 }}
+                      className="rounded"
+                    >
+                      <Bookmark fontSize="small" />
+                    </Avatar>
+                  </div>
                 </td>
                 
                 {/* Title */}
-                <td className="py-4 px-3 align-top">
+                <td className="py-5 px-3 align-top">
                   <div>
-                    <div className="font-medium text-sm leading-5 text-base-content">
+                    <div className="font-bold text-sm leading-5 text-base-content">
                       {bookmark.title || bookmark.content?.title || 'No title'}
                     </div>
                     <div className="text-xs text-base-content/60 mt-1 font-normal">
@@ -195,20 +204,52 @@ export const BookmarkList = () => {
                 </td>
                 
                 {/* Tags */}
-                <td className="py-4 px-3 align-middle">
+                <td className="py-5 px-3 align-middle">
                   <div className="flex flex-wrap gap-1">
-                    {bookmark.tags?.slice(0, 3).map((tag: any) => (
-                      <span
-                        key={tag.id}
-                        className={`badge badge-xs ${
-                          tag.attachedBy === 'ai' 
-                            ? 'badge-primary' 
-                            : 'badge-outline'
-                        }`}
-                      >
-                        {tag.name}
-                      </span>
-                    ))}
+                    {(() => {
+                      console.log('🏷️ BOOKMARK TAGS DEBUG:', {
+                        bookmarkId: bookmark.id,
+                        tags: bookmark.tags,
+                        tagsType: typeof bookmark.tags,
+                        tagsLength: bookmark.tags?.length,
+                        firstTag: bookmark.tags?.[0],
+                        firstTagType: typeof bookmark.tags?.[0]
+                      });
+                      
+                      return bookmark.tags?.slice(0, 3).map((tag: any, index: number) => {
+                        // Handle both object tags and string tags
+                        const tagName = typeof tag === 'string' ? tag : (tag.name || tag);
+                        const isAI = typeof tag === 'object' && tag.attachedBy === 'ai';
+                        
+                        console.log(`🏷️ TAG ${index}:`, {
+                          tag,
+                          tagName,
+                          isAI,
+                          classes: `badge badge-sm ${isAI ? 'badge-primary' : 'badge-outline'}`
+                        });
+                        
+                        return (
+                          <span
+                            key={tag.id || `tag-${index}`}
+                            className={`badge badge-sm ${
+                              isAI ? 'badge-primary' : 'badge-outline'
+                            }`}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              padding: '0.25rem 0.75rem',
+                              borderRadius: '9999px',
+                              fontSize: '0.75rem',
+                              backgroundColor: isAI ? '#570df8' : 'transparent',
+                              color: isAI ? 'white' : '#d1d5db',
+                              border: `1px solid ${isAI ? '#570df8' : '#6b7280'}`
+                            }}
+                          >
+                            {tagName}
+                          </span>
+                        );
+                      });
+                    })()}
                     {bookmark.tags?.length > 3 && (
                       <span className="badge badge-xs badge-ghost">
                         +{bookmark.tags.length - 3}
@@ -218,24 +259,26 @@ export const BookmarkList = () => {
                 </td>
                 
                 {/* Created Date */}
-                <td className="py-4 px-3 align-middle">
+                <td className="py-5 px-3 align-middle">
                   <div className="text-xs text-base-content/60 font-normal">
                     {new Date(bookmark.createdAt).toLocaleDateString()}
                   </div>
                 </td>
                 
                 {/* Actions */}
-                <td className="py-4 px-3 align-middle">
+                <td className="py-5 px-3 align-middle">
                   <div className="flex gap-1">
                     <button 
                       onClick={() => handleEdit(bookmark.id)}
-                      className="btn btn-xs btn-outline"
+                      className="btn btn-xs btn-outline hover:btn-primary"
+                      title="Edit bookmark"
                     >
                       <Edit className="w-3 h-3" />
                     </button>
                     <button 
                       onClick={() => handleDelete(bookmark.id)}
-                      className="btn btn-xs btn-error btn-outline"
+                      className="btn btn-xs btn-error btn-outline hover:btn-error"
+                      title="Delete bookmark"
                     >
                       <Delete className="w-3 h-3" />
                     </button>

@@ -10,7 +10,7 @@ interface KeyboardCommandBarProps {
 
 export const KeyboardCommandBar = ({ keyboardConfig }: KeyboardCommandBarProps) => {
   return (
-    <div className="card bg-base-100 border border-base-300 mb-4">
+    <div className="card bg-base-100 shadow-sm mb-4">
       <div className="card-body py-3 px-6">
         <div className="flex items-center gap-6 w-full">
           <h3 className="text-sm font-semibold text-base-content/70 min-w-fit">

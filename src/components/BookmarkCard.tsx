@@ -36,10 +36,10 @@ export const BookmarkCard = ({ bookmark, isProcessing }: BookmarkCardProps) => {
   
   return (
     <div 
-      className={`card bg-base-100 border border-base-300 transition-all duration-300 ${
+      className={`BookmarkCard card bg-base-100 shadow-md hover:shadow-lg transition-all duration-300 ${
         isProcessing 
           ? 'opacity-50' 
-          : 'cursor-pointer hover:bg-base-50 hover:border-base-400'
+          : 'cursor-pointer hover:bg-base-50'
       }`}
       style={{ width: '100%', maxWidth: 600 }}
       onClick={handleCardClick}
@@ -55,7 +55,7 @@ export const BookmarkCard = ({ bookmark, isProcessing }: BookmarkCardProps) => {
             <Bookmark />
           </Avatar>
           <div className="flex-1">
-            <h2 className="text-lg font-semibold text-base-content leading-6 mb-1">
+            <h2 className="text-lg font-bold text-base-content leading-6 mb-1">
               {bookmark.content?.title || bookmark.title || 'Untitled'}
             </h2>
             <p className="text-sm text-base-content/60 font-normal">
@@ -98,18 +98,48 @@ export const BookmarkCard = ({ bookmark, isProcessing }: BookmarkCardProps) => {
               <span className="text-xs font-medium text-base-content/70 uppercase tracking-wide">Tags:</span>
             </div>
             <div className="flex flex-wrap gap-2">
-              {bookmark.tags.map((tag: any) => (
-                <span
-                  key={tag.id}
-                  className={`badge badge-sm ${
-                    tag.attachedBy === 'ai' 
-                      ? 'badge-primary' 
-                      : 'badge-outline'
-                  }`}
-                >
-                  {tag.name}
-                </span>
-              ))}
+              {(() => {
+                console.log('🎯 BOOKMARK CARD TAGS DEBUG:', {
+                  bookmarkId: bookmark.id,
+                  tags: bookmark.tags,
+                  tagsType: typeof bookmark.tags,
+                  tagsLength: bookmark.tags?.length
+                });
+                
+                return bookmark.tags.map((tag: any, index: number) => {
+                  // Handle both object tags and string tags
+                  const tagName = typeof tag === 'string' ? tag : (tag.name || tag);
+                  const isAI = typeof tag === 'object' && tag.attachedBy === 'ai';
+                  
+                  console.log(`🎯 CARD TAG ${index}:`, {
+                    tag,
+                    tagName,
+                    isAI,
+                    classes: `badge badge-sm ${isAI ? 'badge-primary' : 'badge-outline'}`
+                  });
+                  
+                  return (
+                    <span
+                      key={tag.id || `tag-${index}`}
+                      className={`badge badge-sm ${
+                        isAI ? 'badge-primary' : 'badge-outline'
+                      }`}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        padding: '0.25rem 0.75rem',
+                        borderRadius: '9999px',
+                        fontSize: '0.75rem',
+                        backgroundColor: isAI ? '#570df8' : 'transparent',
+                        color: isAI ? 'white' : '#d1d5db',
+                        border: `1px solid ${isAI ? '#570df8' : '#6b7280'}`
+                      }}
+                    >
+                      {tagName}
+                    </span>
+                  );
+                });
+              })()}
             </div>
           </div>
         )}
@@ -132,7 +162,7 @@ export const BookmarkCard = ({ bookmark, isProcessing }: BookmarkCardProps) => {
         )}
         
         {/* Metadata */}
-        <div className="mt-6 pt-4 border-t border-base-300">
+        <div className="mt-6 pt-4 border-t border-base-200">
           <div className="flex justify-between text-sm text-base-content/60">
             <span>Created: {new Date(bookmark.createdAt).toLocaleDateString()}</span>
             {bookmark.updatedAt && (

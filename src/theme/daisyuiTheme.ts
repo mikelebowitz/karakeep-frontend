@@ -5,7 +5,7 @@ import { deepmerge } from '@mui/utils';
 // Based on React-Admin documentation and DaisyUI's default light theme color palette
 const daisyuiTheme = deepmerge(defaultTheme, {
   palette: {
-    mode: 'light',
+    mode: 'dark',
     primary: {
       main: '#570df8',      // DaisyUI primary
       light: '#7c3aed',     // Lighter variant
@@ -43,20 +43,20 @@ const daisyuiTheme = deepmerge(defaultTheme, {
       contrastText: '#ffffff',
     },
     background: {
-      default: '#ffffff',   // DaisyUI base-100
-      paper: '#f9fafb',     // DaisyUI base-200
+      default: '#1f2937',   // Dark theme background
+      paper: '#374151',     // Dark theme paper
     },
     text: {
-      primary: '#1f2937',   // DaisyUI base-content
-      secondary: '#6b7280', // DaisyUI base-content with opacity
+      primary: '#f9fafb',   // Light text for dark theme
+      secondary: '#d1d5db', // Secondary text for dark theme
       disabled: '#9ca3af',
     },
-    divider: '#e5e7eb',     // DaisyUI border color
+    divider: '#4b5563',     // Dark theme border color
     action: {
-      hover: '#f3f4f6',     // DaisyUI base-300
-      selected: '#e5e7eb',  // DaisyUI base-200
-      disabled: '#d1d5db',
-      disabledBackground: '#f3f4f6',
+      hover: '#4b5563',     // Dark theme hover
+      selected: '#374151',  // Dark theme selected
+      disabled: '#6b7280',
+      disabledBackground: '#374151',
     },
   },
   typography: {
@@ -148,29 +148,30 @@ const daisyuiTheme = deepmerge(defaultTheme, {
         },
       },
     },
-    // React-Admin Datagrid - basic styling without complex overrides
+    // React-Admin Datagrid - dark theme styling
     RaDatagrid: {
       styleOverrides: {
         root: {
-          backgroundColor: '#ffffff',
+          backgroundColor: '#1f2937',  // Dark background
           borderRadius: '0.5rem',
-          border: '1px solid #e5e7eb',
-          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+          border: '1px solid #374151',  // Dark border
+          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.3)',
           overflow: 'hidden',
           '& .RaDatagrid-headerCell': {
-            backgroundColor: '#570df8',
-            color: '#ffffff',
+            backgroundColor: '#374151',  // Darker header
+            color: '#f9fafb',           // Light text
             fontWeight: 600,
             fontSize: '0.875rem',
             padding: '0.75rem 0.5rem',
           },
           '& .RaDatagrid-rowCell': {
             padding: '0.75rem 0.5rem',
-            borderBottom: '1px solid #f3f4f6',
+            borderBottom: '1px solid #374151',  // Dark border
+            color: '#f9fafb',                   // Light text
           },
           '& .RaDatagrid-row': {
             '&:hover': {
-              backgroundColor: '#f9fafb',
+              backgroundColor: '#374151',  // Dark hover
             },
           },
         },
@@ -225,16 +226,17 @@ const daisyuiTheme = deepmerge(defaultTheme, {
         },
       },
     },
-    // Filter form styling
+    // Filter form styling - dark theme
     RaFilterForm: {
       styleOverrides: {
         root: {
-          backgroundColor: '#ffffff',
-          border: '1px solid #e5e7eb',
+          backgroundColor: '#374151',  // Dark background
+          border: '1px solid #4b5563',  // Dark border
           borderRadius: '0.5rem',
           padding: '1rem',
           margin: '1rem 0',
-          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.3)',
+          color: '#f9fafb',  // Light text
         },
       },
     },
@@ -272,16 +274,18 @@ const daisyuiTheme = deepmerge(defaultTheme, {
         },
       },
     },
-    // Card styling to match DaisyUI cards
+    // Card styling to match DaisyUI cards - dark theme
     MuiCard: {
       styleOverrides: {
         root: {
           borderRadius: '1rem',           // DaisyUI card border radius
-          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-          border: '1px solid #e5e7eb',
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)',
+          border: '1px solid #374151',    // Dark border
+          backgroundColor: '#1f2937',     // Dark background
+          color: '#f9fafb',              // Light text
           transition: 'all 0.2s ease-in-out',
           '&:hover': {
-            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2)',
           },
         },
       },
@@ -299,35 +303,38 @@ const daisyuiTheme = deepmerge(defaultTheme, {
         },
       },
     },
-    // Paper styling for consistent elevation
+    // Paper styling for consistent elevation - dark theme
     MuiPaper: {
       styleOverrides: {
         root: {
           borderRadius: '1rem',
-          border: '1px solid #e5e7eb',
+          border: '1px solid #374151',    // Dark border
+          backgroundColor: '#1f2937',     // Dark background
+          color: '#f9fafb',              // Light text
         },
         elevation1: {
-          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2)',
         },
         elevation2: {
-          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)',
         },
         elevation3: {
-          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2)',
         },
       },
     },
-    // Input styling - better form input appearance
+    // Input styling - dark theme
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
           borderRadius: '0.5rem',
-          backgroundColor: '#ffffff',
+          backgroundColor: '#374151',     // Dark input background
+          color: '#f9fafb',              // Light text
           '& .MuiOutlinedInput-notchedOutline': {
-            borderColor: '#d1d5db',
+            borderColor: '#4b5563',      // Dark border
           },
           '&:hover .MuiOutlinedInput-notchedOutline': {
-            borderColor: '#9ca3af',
+            borderColor: '#6b7280',      // Lighter border on hover
           },
           '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
             borderColor: '#570df8',
@@ -340,13 +347,14 @@ const daisyuiTheme = deepmerge(defaultTheme, {
       styleOverrides: {
         root: {
           borderRadius: '0.5rem',
-          backgroundColor: '#f9fafb',
-          border: '1px solid #e5e7eb',
+          backgroundColor: '#374151',     // Dark input background
+          color: '#f9fafb',              // Light text
+          border: '1px solid #4b5563',   // Dark border
           '&:hover': {
-            backgroundColor: '#f3f4f6',
+            backgroundColor: '#4b5563',   // Slightly lighter on hover
           },
           '&.Mui-focused': {
-            backgroundColor: '#ffffff',
+            backgroundColor: '#374151',
             borderColor: '#570df8',
           },
           '&:before': {
@@ -358,13 +366,13 @@ const daisyuiTheme = deepmerge(defaultTheme, {
         },
       },
     },
-    // Search filter styling
+    // Search filter styling - dark theme
     MuiFormControl: {
       styleOverrides: {
         root: {
           margin: '0.5rem',
           '& .MuiInputLabel-root': {
-            color: '#6b7280',
+            color: '#9ca3af',  // Light gray for labels
           },
           '& .MuiInputLabel-root.Mui-focused': {
             color: '#570df8',
@@ -372,14 +380,14 @@ const daisyuiTheme = deepmerge(defaultTheme, {
         },
       },
     },
-    // AppBar styling
+    // AppBar styling - dark theme
     MuiAppBar: {
       styleOverrides: {
         root: {
-          backgroundColor: '#ffffff',
-          color: '#1f2937',
-          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
-          borderBottom: '1px solid #e5e7eb',
+          backgroundColor: '#1f2937',     // Dark background
+          color: '#f9fafb',              // Light text
+          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2)',
+          borderBottom: '1px solid #374151',  // Dark border
           width: '100%',
         },
       },
@@ -391,6 +399,58 @@ const daisyuiTheme = deepmerge(defaultTheme, {
           maxWidth: 'none !important',
           width: '100%',
           padding: '0 1rem',
+        },
+      },
+    },
+    // Table components - dark theme
+    MuiTableContainer: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#1f2937',
+        },
+      },
+    },
+    MuiTable: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#1f2937',
+        },
+      },
+    },
+    MuiTableHead: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#374151',
+        },
+      },
+    },
+    MuiTableCell: {
+      styleOverrides: {
+        root: {
+          color: '#f9fafb',
+          borderBottomColor: '#374151',
+        },
+        head: {
+          backgroundColor: '#374151',
+          color: '#f9fafb',
+          fontWeight: 600,
+        },
+      },
+    },
+    MuiTableRow: {
+      styleOverrides: {
+        root: {
+          '&:hover': {
+            backgroundColor: '#374151',
+          },
+        },
+      },
+    },
+    // Typography - ensure text is light colored
+    MuiTypography: {
+      styleOverrides: {
+        root: {
+          color: '#f9fafb',
         },
       },
     },

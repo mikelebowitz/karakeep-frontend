@@ -1,5 +1,5 @@
 // No Material-UI imports needed for DaisyUI components
-import { type SmartKeyBinding, getReasonText } from '../utils/smartKeyBinding';
+import { type SmartKeyBinding } from '../utils/smartKeyBinding';
 
 interface CommandSidebarProps {
   lists: any[];
@@ -21,16 +21,16 @@ export const CommandSidebar = ({
     : lists;
   
   return (
-    <div className="card bg-base-100 border border-base-300 h-full">
+    <div className="CommandSidebar card bg-base-100 shadow-sm h-full">
       <div className="card-body flex-1 overflow-auto">
         {/* Available Lists Section */}
         <div className="flex-1">
-          <h3 className="text-base font-bold mb-4 text-base-content">Available Lists</h3>
+          <h3 className="text-lg font-bold mb-4 text-base-content">Available Lists</h3>
           
           {availableLists.length === 0 ? (
             <p className="text-base-content/60 text-xs">No lists available</p>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-1">
               {availableLists.map((list, index) => {
                 // Use smart key bindings if available, otherwise use index as key
                 const keyBinding = useSmartKeys 
@@ -45,29 +45,24 @@ export const CommandSidebar = ({
                   <div
                     key={list.id}
                     className={`
-                      flex items-center gap-3 p-3 rounded-lg cursor-pointer
+                      flex items-center gap-3 p-2 rounded-lg cursor-pointer
                       transition-all duration-200
                       ${isSelected 
-                        ? 'bg-primary text-primary-content border border-primary' 
-                        : 'bg-base-200 hover:bg-base-300 border border-base-300'
+                        ? 'bg-primary text-primary-content shadow-sm' 
+                        : 'bg-base-200 hover:bg-base-300 shadow-sm'
                       }
                     `}
                     onClick={() => onListToggle(index)}
                   >
                     <div className="flex items-center gap-1">
-                      <kbd className="kbd kbd-xs min-w-[1.75rem] text-center">
-                        {keyBinding.key}
+                      <kbd className="kbd kbd-sm">
+                        [{keyBinding.key}]
                       </kbd>
-                      {useSmartKeys && 'reason' in keyBinding && (
-                        <span className="text-xs text-base-content/40">
-                          {getReasonText(keyBinding.reason)}
-                        </span>
-                      )}
                     </div>
                     <span className="text-xl" role="img" aria-label={list.name}>
                       {list.icon || '📁'}
                     </span>
-                    <span className={`flex-1 text-sm ${isSelected ? 'font-semibold text-primary-content' : 'text-base-content/80'}`}>
+                    <span className={`flex-1 text-base ${isSelected ? 'font-semibold text-primary-content' : 'text-base-content/80'}`}>
                       {list.name}
                     </span>
                     {isSelected && (
@@ -100,7 +95,7 @@ export const CommandSidebar = ({
         </div>
         
         {/* Keyboard Layout Info */}
-        <div className="mt-auto pt-4 border-t border-base-300">
+        <div className="mt-auto pt-4 border-t border-base-200">
           <p className="text-xs text-base-content/60">
             Keyboard layout can be changed in settings
           </p>

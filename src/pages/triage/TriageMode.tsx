@@ -51,38 +51,75 @@ export const TriageMode = () => {
   // Smart key bindings
   const [smartKeyBindings, setSmartKeyBindings] = useState<SmartKeyBinding[]>([]);
   
-  // Load inbox bookmarks
+  // Load inbox bookmarks with lazy loading
   useEffect(() => {
     const loadData = async () => {
       try {
-        // Load ALL bookmarks from inbox for triage mode
-        const allBookmarks = await (dataProvider as any).getAllInboxBookmarks();
-        
-        // Load available lists
+        // First, load available lists (needed for UI)
         const listsResult = await dataProvider.getList('lists', {
           pagination: { page: 1, perPage: 100 },
           sort: { field: 'name', order: 'ASC' },
           filter: {}
         });
         
-        console.log(`🎯 Triage mode loaded ${allBookmarks.length} bookmarks for processing`);
-        
         // Generate smart key bindings for lists
         const usageStats = loadListUsage();
         const smartBindings = generateSmartKeyBindings(listsResult.data, usageStats);
+        setAvailableLists(listsResult.data);
+        setSmartKeyBindings(smartBindings);
         
+        // First, get the total count for accurate progress tracking
+        const countResult = await dataProvider.getList('bookmarks', {
+          pagination: { page: 1, perPage: 1 },
+          sort: { field: 'createdAt', order: 'DESC' },
+          filter: { listId: 'qukdzoowmmsnr8hb19b0z1xc' } // Inbox list ID
+        });
+        
+        const totalCount = countResult.total || 0;
+        
+        // Load first batch of bookmarks (20) for immediate display
+        const firstBatch = await dataProvider.getList('bookmarks', {
+          pagination: { page: 1, perPage: 20 },
+          sort: { field: 'createdAt', order: 'DESC' },
+          filter: { listId: 'qukdzoowmmsnr8hb19b0z1xc' } // Inbox list ID
+        });
+        
+        console.log(`🎯 Triage mode loaded first ${firstBatch.data.length} of ${totalCount} bookmarks`);
+        
+        // Set initial bookmarks and mark as not loading
         setTriageState(prev => ({
           ...prev,
-          bookmarks: allBookmarks,
+          bookmarks: firstBatch.data,
           isLoading: false
         }));
         
-        setAvailableLists(listsResult.data);
-        setSmartKeyBindings(smartBindings);
+        // Load remaining bookmarks in the background if there are more
+        if (totalCount > 20) {
+          loadRemainingBookmarks();
+        }
+        
       } catch (error) {
         notify('Failed to load bookmarks', { type: 'error' });
         console.error('Failed to load triage data:', error);
         setTriageState(prev => ({ ...prev, isLoading: false }));
+      }
+    };
+    
+    const loadRemainingBookmarks = async () => {
+      try {
+        // Get all remaining bookmarks
+        const allBookmarks = await (dataProvider as any).getAllInboxBookmarks();
+        
+        // Update state with all bookmarks (this includes the ones we already have)
+        setTriageState(prev => ({
+          ...prev,
+          bookmarks: allBookmarks
+        }));
+        
+        console.log(`🎯 Background load complete: ${allBookmarks.length} total bookmarks`);
+      } catch (error) {
+        console.error('Failed to load remaining bookmarks:', error);
+        // Don't show error to user since they already have some bookmarks to work with
       }
     };
     
@@ -270,10 +307,10 @@ export const TriageMode = () => {
             {/* Bookmark card skeleton */}
             <div className="flex-1 flex items-center justify-center px-2">
               <div className="w-full max-w-2xl">
-                <div className="card bg-base-100 border border-base-300">
+                <div className="card bg-base-100 shadow-sm">
                   <div className="card-body">
                     <div className="flex items-center gap-4 mb-4">
-                      <div className="skeleton w-8 h-8 rounded-full shrink-0"></div>
+                      <div className="skeleton h-12 w-12 rounded-full shrink-0"></div>
                       <div className="flex-1">
                         <div className="skeleton h-6 w-3/4 mb-2"></div>
                         <div className="skeleton h-4 w-1/2"></div>
@@ -294,14 +331,14 @@ export const TriageMode = () => {
             
             {/* Sidebar skeleton */}
             <div className="w-64 flex-shrink-0">
-              <div className="card bg-base-100 border border-base-300 h-full">
+              <div className="card bg-base-100 shadow-sm h-full">
                 <div className="card-body">
                   <div className="skeleton h-6 w-32 mb-4"></div>
                   <div className="space-y-3">
                     {[...Array(8)].map((_, i) => (
                       <div key={i} className="flex items-center gap-3">
-                        <div className="skeleton w-6 h-6 rounded"></div>
-                        <div className="skeleton w-6 h-6 rounded-full"></div>
+                        <div className="skeleton h-6 w-6 rounded"></div>
+                        <div className="skeleton h-6 w-6 rounded-full"></div>
                         <div className="skeleton h-4 flex-1"></div>
                       </div>
                     ))}
@@ -347,9 +384,9 @@ export const TriageMode = () => {
         
         <div className="flex gap-4 flex-1 min-h-0">
           {/* Bookmark Card */}
-          <div className="flex-1 flex items-center justify-center px-2">
+          <div className="flex-1 flex items-start justify-center px-2 pt-8">
             {currentBookmark && (
-              <div className="w-full max-w-2xl">
+              <div className="w-full max-w-4xl">
                 <BookmarkCard 
                   bookmark={currentBookmark}
                   isProcessing={triageState.isProcessing}
