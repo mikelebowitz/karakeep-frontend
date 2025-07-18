@@ -1,34 +1,30 @@
-# Karakeep Frontend
+# Karakeep - Bookmark Management System
 
-A modern bookmark management system frontend built with React-Admin and Material UI.
+A modern, productivity-focused bookmark management system with a React-Admin frontend and comprehensive organizational features.
 
-![React](https://img.shields.io/badge/React-18.3-blue)
-![React-Admin](https://img.shields.io/badge/React--Admin-5.x-orange)
-![Material-UI](https://img.shields.io/badge/Material--UI-6.x-blue)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue)
-![Vite](https://img.shields.io/badge/Vite-6.x-purple)
+![React](https://img.shields.io/badge/React-19.1-blue)
+![React-Admin](https://img.shields.io/badge/React--Admin-5.9-orange)
+![DaisyUI](https://img.shields.io/badge/DaisyUI-4.12-green)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue)
+![Vite](https://img.shields.io/badge/Vite-7.0-purple)
 
-## Features
+## 📚 Project Overview
 
-- 📚 **Bookmark Management**: Full CRUD operations for bookmarks with metadata
-- 🏷️ **Tag System**: Color-coded tags with bulk assignment
-- 📁 **Lists**: Organize bookmarks into custom lists
-- 🔐 **JWT Authentication**: Secure login with token refresh
-- ⚡ **Keyboard Shortcuts**: Power user features (Cmd+K for search, Cmd+N for new)
-- 🎯 **Batch Operations**: Bulk archive, tag, and list assignment
-- 🔍 **Real-time Search**: Fast filtering across all resources
-- 📱 **Responsive Design**: Mobile-friendly Material UI components
+Karakeep is a comprehensive bookmark management solution designed for power users who need efficient tools for organizing, categorizing, and retrieving their saved web content. The system provides advanced features like batch operations, real-time search, keyboard shortcuts, and a triage mode for rapid content processing.
 
-## Tech Stack
+### Key Features
 
-- **Framework**: React 18.3 with TypeScript
-- **Admin Framework**: React-Admin 5.x
-- **UI Library**: Material UI 6.x
-- **Build Tool**: Vite 6.x
-- **HTTP Client**: Axios
-- **Authentication**: JWT with automatic refresh
+- 🔖 **Advanced Bookmark Management**: Full CRUD operations with metadata support
+- 🏷️ **Smart Tagging System**: Color-coded tags with bulk assignment capabilities
+- 📁 **List Organization**: Custom lists for project-based content organization
+- 🎯 **Triage Mode**: Card-based interface for rapid bookmark processing
+- ⚡ **Keyboard Shortcuts**: Power-user navigation and actions
+- 🔍 **Real-time Search**: Fast filtering across all content and metadata
+- 🔄 **Batch Operations**: Bulk tagging, listing, and archiving
+- 🔐 **Secure Authentication**: JWT-based auth with automatic token refresh
+- 📱 **Responsive Design**: Mobile-friendly DaisyUI components
 
-## Getting Started
+## 🚀 Quick Start
 
 ### Prerequisites
 
@@ -36,7 +32,7 @@ A modern bookmark management system frontend built with React-Admin and Material
 - npm or yarn
 - Backend API running (see API documentation)
 
-### Installation
+### Development Setup
 
 1. Clone the repository:
 ```bash
@@ -49,104 +45,163 @@ cd karakeep-frontend
 npm install
 ```
 
-3. Configure environment:
-```bash
-cp .env.example .env.local
-# Edit .env.local and set VITE_API_URL to your backend API
-```
-
-4. Start development server:
+3. Start development server:
 ```bash
 npm run dev
 ```
 
 The application will be available at `http://localhost:5173`
 
-### Demo Credentials
+### Available Commands
 
-If using the demo backend:
-- Email: `demo@example.com`
-- Password: `password`
+```bash
+# Development
+npm run dev          # Start development server on port 5173
 
-## Keyboard Shortcuts
+# Build & Test  
+npm run build        # TypeScript check + Vite production build
+npm run lint         # Run ESLint
+npm run preview      # Preview production build
+```
+
+## 🛠️ Technology Stack
+
+**Frontend Framework:**
+- React 19.1.0 + TypeScript 5.7
+- React-Admin 5.9.1 (admin interface framework)
+- DaisyUI 4.12.22 + Tailwind CSS 4.1.11 (replacing Material UI)
+- Vite 7.0.4 (build tool)
+
+**Key Libraries:**
+- Axios (HTTP client with JWT authentication)
+- React Router (navigation)
+- React Hook Form (form management)
+
+**Development Tools:**
+- ESLint (code linting)
+- Prettier (code formatting)
+- TypeScript (type safety)
+
+## ⌨️ Keyboard Shortcuts
 
 - `Cmd/Ctrl + K`: Quick search
 - `Cmd/Ctrl + N`: New bookmark
 - `G then B`: Go to bookmarks
-- `G then T`: Go to tags  
+- `G then T`: Go to tags
 - `G then L`: Go to lists
 - `?`: Show help
+- **Triage Mode**: `1-9` assign to lists, `Cmd+Return` apply changes
 
-## Project Structure
+## 📊 Current Status
+
+**Latest Version:** v1.1 (July 17, 2025)
+
+### ✅ Completed Features
+- **Core CRUD Operations**: Full bookmark, tag, and list management
+- **BookmarkEdit Functionality**: Complete with custom TagSelector/ListSelector
+- **Triage Mode**: Card-based rapid processing interface
+- **Responsive Design**: Mobile-optimized layouts
+- **JWT Authentication**: Secure login with token refresh
+- **API Integration**: Comprehensive endpoint documentation
+- **Keyboard Navigation**: Basic shortcuts implemented
+
+### 🔄 In Progress
+- Documentation cleanup and organization
+- Enhanced keyboard shortcut system
+- Accessibility compliance (WCAG 2.1 AA)
+
+### 📋 Next Phase
+- Re-enable Tag and List management views
+- Implement bulk editing capabilities
+- Performance optimization for large datasets
+- Comprehensive testing framework
+
+## 📁 Project Structure
 
 ```
-src/
-├── components/      # Reusable components
-│   ├── BatchActions.tsx
-│   └── KeyboardShortcuts.tsx
-├── pages/          # Page components
-│   ├── bookmarks/  # Bookmark CRUD screens
-│   ├── tags/       # Tag CRUD screens
-│   └── lists/      # List CRUD screens
-├── providers/      # Data and auth providers
-│   ├── authProvider.ts
-│   └── dataProvider.ts
-├── types/          # TypeScript definitions
-└── App.tsx         # Main application
+karakeep-frontend/
+├── 📄 Documentation
+│   ├── README.md           # This file
+│   ├── CLAUDE.md           # AI development guidance
+│   └── docs/
+│       ├── requirements.md      # Functional requirements
+│       ├── prd.md              # Product specification
+│       ├── techstack.md        # Architecture decisions
+│       ├── status.md           # Development progress
+│       └── KARAKEEP_API_ENDPOINTS.md  # API documentation
+├── 🔧 Frontend Code
+│   ├── src/
+│   │   ├── components/     # Reusable UI components
+│   │   ├── pages/         # CRUD screens (bookmarks, tags, lists)
+│   │   ├── providers/     # Auth and data providers
+│   │   ├── types/         # TypeScript definitions
+│   │   └── utils/         # Helper functions
+│   ├── public/            # Static assets
+│   └── dist/              # Production build output
+└── ⚙️ Configuration
+    ├── package.json        # Dependencies and scripts
+    ├── vite.config.ts     # Build configuration
+    ├── tailwind.config.js # Styling configuration
+    └── vercel.json        # Deployment configuration
 ```
 
-## Deployment
+## 🔌 API Integration
 
-### Deploy to Vercel
+The frontend integrates with the Karakeep REST API through:
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/mikelebowitz/karakeep-frontend)
+- **Authentication**: `POST /auth/login`, `POST /auth/refresh`
+- **Bookmarks**: Full CRUD with pagination and search
+- **Tags & Lists**: Management and association endpoints
+- **Batch Operations**: Bulk updates and deletions
 
-1. Click the button above or import your GitHub repository on Vercel
-2. Configure environment variables:
-   - `VITE_API_URL`: Your backend API URL
-3. Deploy!
+See `docs/KARAKEEP_API_ENDPOINTS.md` for complete API documentation.
 
-### Manual Deployment
+## 🚀 Deployment
 
+The frontend is configured for automatic deployment to Vercel:
+
+1. **GitHub Integration**: Connected to `mikelebowitz/karakeep-frontend`
+2. **Environment Variables**: Configure `VITE_API_URL` in Vercel dashboard
+3. **Automatic Builds**: Triggered on push to main branch
+
+For manual deployment:
 ```bash
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
+npm run build  # Creates production build in dist/
 ```
 
-The built files will be in the `dist` directory.
+## 🤝 Contributing
 
-## API Integration
+1. Fork the frontend repository: `github.com/mikelebowitz/karakeep-frontend`
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Make your changes following the existing code patterns
+4. Ensure TypeScript and ESLint pass: `npm run build && npm run lint`
+5. Commit your changes: `git commit -m 'Add amazing feature'`
+6. Push to your fork: `git push origin feature/amazing-feature`
+7. Open a Pull Request
 
-This frontend expects a REST API with the following endpoints:
+## 📝 Documentation
 
-- `POST /auth/login` - Authentication
-- `POST /auth/refresh` - Token refresh
-- `GET /bookmarks` - List bookmarks with pagination
-- `POST /bookmarks` - Create bookmark
-- `PUT /bookmarks/:id` - Update bookmark
-- `DELETE /bookmarks/:id` - Delete bookmark
-- Similar endpoints for `/tags` and `/lists`
+- **Requirements**: See `docs/requirements.md` for complete functional specifications
+- **Product Design**: See `docs/prd.md` for user stories and acceptance criteria
+- **Technical Decisions**: See `docs/techstack.md` for architecture choices
+- **Development Progress**: See `docs/status.md` for current milestone tracking
+- **API Documentation**: See `docs/KARAKEEP_API_ENDPOINTS.md` for complete API reference
 
-See the [backend documentation](https://github.com/mikelebowitz/karakeep-backend) for API details.
+## 🔮 Future Enhancements
 
-## Contributing
+- Browser extension for direct bookmark saving
+- Advanced bookmark import/export functionality
+- Social sharing and collaboration features
+- Machine learning-powered auto-tagging
+- Offline support with sync capabilities
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
+## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Acknowledgments
+## 🙏 Acknowledgments
 
 - Built with [React-Admin](https://marmelab.com/react-admin/)
-- UI components from [Material-UI](https://mui.com/)
-- Icons from [Material Icons](https://mui.com/material-ui/material-icons/)
+- UI components from [DaisyUI](https://daisyui.com/)
+- Icons from [Heroicons](https://heroicons.com/)
 - Bundled with [Vite](https://vitejs.dev/)
