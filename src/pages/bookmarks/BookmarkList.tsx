@@ -174,8 +174,8 @@ export const BookmarkList = () => {
             {state.bookmarks.map((bookmark) => (
               <tr key={bookmark.id} className="hover">
                 {/* Favicon */}
-                <td className="py-5 px-3 align-top">
-                  <div className="mt-1">
+                <td className="py-5 px-3 align-top text-center">
+                  <div className="mt-1 inline-block">
                     <Avatar 
                       src={bookmark.content?.favicon} 
                       sx={{ width: 24, height: 24 }}

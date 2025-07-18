@@ -14,27 +14,39 @@ export const CommandSidebar = ({
   onListToggle,
   smartKeyBindings 
 }: CommandSidebarProps) => {
-  // Use smart key bindings if available, otherwise show all lists
-  const useSmartKeys = smartKeyBindings && smartKeyBindings.length > 0;
+  // Filter out smart lists (Inbox and other system lists)
+  const smartListNames = ['Inbox', 'All', 'Unread', 'Starred', 'Archive'];
+  const userLists = lists.filter(list => !smartListNames.includes(list.name));
+  
+  // Filter smart key bindings to only include user lists
+  const filteredSmartKeyBindings = smartKeyBindings 
+    ? smartKeyBindings.filter(binding => {
+        const list = lists.find(l => l.id === binding.listId);
+        return list && !smartListNames.includes(list.name);
+      })
+    : [];
+  
+  // Use filtered smart key bindings if available, otherwise show user lists with sequential keys
+  const useSmartKeys = filteredSmartKeyBindings && filteredSmartKeyBindings.length > 0;
   const availableLists = useSmartKeys 
-    ? smartKeyBindings.map(binding => lists.find(list => list.id === binding.listId)).filter(Boolean)
-    : lists;
+    ? filteredSmartKeyBindings.map(binding => userLists.find(list => list.id === binding.listId)).filter(Boolean)
+    : userLists;
   
   return (
-    <div className="CommandSidebar card bg-base-100 shadow-sm h-full">
-      <div className="card-body flex-1 overflow-auto">
-        {/* Available Lists Section */}
+    <div className="CommandSidebar bg-base-100 h-full">
+      <div className="p-6 flex-1 overflow-auto">
+        {/* Lists Section */}
         <div className="flex-1">
-          <h3 className="text-lg font-bold mb-4 text-base-content">Available Lists</h3>
+          <h3 className="text-sm font-semibold text-base-content/70 mb-4">Lists</h3>
           
           {availableLists.length === 0 ? (
             <p className="text-base-content/60 text-xs">No lists available</p>
           ) : (
-            <div className="space-y-1">
+            <div className="space-y-3">
               {availableLists.map((list, index) => {
-                // Use smart key bindings if available, otherwise use index as key
+                // Use filtered smart key bindings if available, otherwise use index as key
                 const keyBinding = useSmartKeys 
-                  ? smartKeyBindings[index]
+                  ? filteredSmartKeyBindings[index]
                   : { key: (index + 1).toString() };
                 
                 if (!keyBinding) return null;
@@ -44,62 +56,27 @@ export const CommandSidebar = ({
                 return (
                   <div
                     key={list.id}
-                    className={`
-                      flex items-center gap-3 p-2 rounded-lg cursor-pointer
-                      transition-all duration-200
-                      ${isSelected 
-                        ? 'bg-primary text-primary-content shadow-sm' 
-                        : 'bg-base-200 hover:bg-base-300 shadow-sm'
-                      }
-                    `}
+                    className="flex items-center gap-2 cursor-pointer"
                     onClick={() => onListToggle(index)}
                   >
-                    <div className="flex items-center gap-1">
-                      <kbd className="kbd kbd-sm">
-                        [{keyBinding.key}]
-                      </kbd>
-                    </div>
-                    <span className="text-xl" role="img" aria-label={list.name}>
-                      {list.icon || '📁'}
-                    </span>
-                    <span className={`flex-1 text-base ${isSelected ? 'font-semibold text-primary-content' : 'text-base-content/80'}`}>
-                      {list.name}
+                    <kbd className="kbd kbd-xs w-8 flex-shrink-0">{keyBinding.key}</kbd>
+                    <span className={`text-base flex-1 ${
+                      isSelected 
+                        ? 'text-primary font-semibold' 
+                        : 'text-base-content/60'
+                    }`}>
+                      {list.icon || '📁'} {list.name}
                     </span>
                     {isSelected && (
-                      <span className="text-primary-content text-xs">✓</span>
+                      <span className="text-primary text-xs">✓</span>
                     )}
                   </div>
                 );
               })}
             </div>
           )}
-          
-          {/* Show selected lists summary */}
-          {selectedLists.length > 0 && (
-            <div className="mt-6 p-3 bg-primary/10 rounded-lg">
-              <p className="text-sm font-semibold text-primary">
-                Selected: {selectedLists.length} list{selectedLists.length !== 1 ? 's' : ''}
-              </p>
-              <div className="mt-1 flex flex-wrap gap-1">
-                {selectedLists.map(listId => {
-                  const list = lists.find(l => l.id === listId);
-                  return list ? (
-                    <span key={listId} className="badge badge-primary badge-sm">
-                      {list.icon} {list.name}
-                    </span>
-                  ) : null;
-                })}
-              </div>
-            </div>
-          )}
         </div>
         
-        {/* Keyboard Layout Info */}
-        <div className="mt-auto pt-4 border-t border-base-200">
-          <p className="text-xs text-base-content/60">
-            Keyboard layout can be changed in settings
-          </p>
-        </div>
       </div>
     </div>
   );

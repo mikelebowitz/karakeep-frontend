@@ -379,14 +379,7 @@ button, .btn, a, [role="button"], [onclick], .cursor-pointer {
   border-radius: 0.5rem !important;
 }
 
-/* Make kbd in triage mode sidebar even more prominent */
-.CommandSidebar .kbd {
-  font-size: 1rem !important;
-  font-weight: 800 !important;
-  padding: 0.375rem 0.875rem !important;
-  background-color: #4b5563 !important;
-  border: 2px solid #6b7280 !important;
-}
+/* Removed CommandSidebar-specific kbd styling to ensure consistency */
 
 /* Specific overrides for our bookmark components */
 /* Target the exact selectors to override React-Admin */

@@ -25,6 +25,7 @@ interface TriageState {
   isProcessing: boolean;
   completedCount: number;
   isLoading: boolean;
+  totalCount: number;
 }
 
 export const TriageMode = () => {
@@ -42,7 +43,8 @@ export const TriageMode = () => {
     selectedLists: [],
     isProcessing: false,
     completedCount: 0,
-    isLoading: true
+    isLoading: true,
+    totalCount: 0
   });
   
   // Available lists for assignment
@@ -90,7 +92,8 @@ export const TriageMode = () => {
         setTriageState(prev => ({
           ...prev,
           bookmarks: firstBatch.data,
-          isLoading: false
+          isLoading: false,
+          totalCount: totalCount
         }));
         
         // Load remaining bookmarks in the background if there are more
@@ -295,35 +298,46 @@ export const TriageMode = () => {
       <div className="min-h-screen flex flex-col">
         <div className="max-w-7xl mx-auto px-4 py-3 flex-1 flex flex-col">
           {/* Header skeleton */}
-          <div className="flex justify-between items-center mb-4">
-            <div className="skeleton h-8 w-48"></div>
-            <div className="skeleton h-8 w-24"></div>
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center gap-4">
+              <div className="skeleton h-8 w-32"></div>
+              <div className="skeleton h-6 w-48"></div>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="skeleton h-4 w-32"></div>
+              <div className="skeleton h-6 w-20"></div>
+            </div>
           </div>
           
           {/* Keyboard commands skeleton */}
-          <div className="skeleton h-16 w-full mb-4"></div>
+          <div className="mb-4">
+            <div className="flex items-center gap-6">
+              <div className="skeleton h-4 w-32"></div>
+              <div className="skeleton h-6 w-16"></div>
+              <div className="skeleton h-6 w-16"></div>
+              <div className="skeleton h-6 w-12"></div>
+            </div>
+          </div>
           
           <div className="flex gap-4 flex-1 min-h-0">
             {/* Bookmark card skeleton */}
-            <div className="flex-1 flex items-center justify-center px-2">
-              <div className="w-full max-w-2xl">
-                <div className="card bg-base-100 shadow-sm">
-                  <div className="card-body">
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className="skeleton h-12 w-12 rounded-full shrink-0"></div>
-                      <div className="flex-1">
-                        <div className="skeleton h-6 w-3/4 mb-2"></div>
-                        <div className="skeleton h-4 w-1/2"></div>
-                      </div>
+            <div className="flex-1 flex items-start justify-center px-2 pt-8">
+              <div className="w-full max-w-4xl">
+                <div className="bg-base-100 border-0 p-6">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="skeleton h-12 w-12 rounded shrink-0"></div>
+                    <div className="flex-1">
+                      <div className="skeleton h-6 w-3/4 mb-2"></div>
+                      <div className="skeleton h-4 w-1/2"></div>
                     </div>
-                    <div className="skeleton h-4 w-full mb-2"></div>
-                    <div className="skeleton h-4 w-4/5 mb-2"></div>
-                    <div className="skeleton h-4 w-2/3 mb-4"></div>
-                    <div className="flex gap-2">
-                      <div className="skeleton h-6 w-16"></div>
-                      <div className="skeleton h-6 w-20"></div>
-                      <div className="skeleton h-6 w-14"></div>
-                    </div>
+                  </div>
+                  <div className="skeleton h-4 w-full mb-2"></div>
+                  <div className="skeleton h-4 w-4/5 mb-2"></div>
+                  <div className="skeleton h-4 w-2/3 mb-4"></div>
+                  <div className="flex gap-2">
+                    <div className="skeleton h-6 w-16"></div>
+                    <div className="skeleton h-6 w-20"></div>
+                    <div className="skeleton h-6 w-14"></div>
                   </div>
                 </div>
               </div>
@@ -331,18 +345,16 @@ export const TriageMode = () => {
             
             {/* Sidebar skeleton */}
             <div className="w-64 flex-shrink-0">
-              <div className="card bg-base-100 shadow-sm h-full">
-                <div className="card-body">
-                  <div className="skeleton h-6 w-32 mb-4"></div>
-                  <div className="space-y-3">
-                    {[...Array(8)].map((_, i) => (
-                      <div key={i} className="flex items-center gap-3">
-                        <div className="skeleton h-6 w-6 rounded"></div>
-                        <div className="skeleton h-6 w-6 rounded-full"></div>
-                        <div className="skeleton h-4 flex-1"></div>
-                      </div>
-                    ))}
-                  </div>
+              <div className="bg-base-100 h-full p-6">
+                <div className="skeleton h-6 w-16 mb-4"></div>
+                <div className="space-y-3">
+                  {[...Array(8)].map((_, i) => (
+                    <div key={i} className="flex items-center gap-3 p-2 bg-base-200 rounded-lg">
+                      <div className="skeleton h-6 w-6 rounded"></div>
+                      <div className="skeleton h-6 w-6 rounded-full"></div>
+                      <div className="skeleton h-4 flex-1"></div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -374,8 +386,8 @@ export const TriageMode = () => {
     <div className="min-h-screen flex flex-col">
       <div className="max-w-7xl mx-auto px-4 py-3 flex-1 flex flex-col">
         <TriageHeader
-          current={triageState.currentIndex + 1}
-          total={triageState.bookmarks.length}
+          current={triageState.bookmarks.length - triageState.currentIndex}
+          total={triageState.totalCount || triageState.bookmarks.length + triageState.completedCount}
           completed={triageState.completedCount}
           onQuit={quitTriage}
         />
@@ -384,14 +396,37 @@ export const TriageMode = () => {
         
         <div className="flex gap-4 flex-1 min-h-0">
           {/* Bookmark Card */}
-          <div className="flex-1 flex items-start justify-center px-2 pt-8">
+          <div className="flex-1 flex flex-col items-center px-2 pt-8">
             {currentBookmark && (
-              <div className="w-full max-w-4xl">
-                <BookmarkCard 
-                  bookmark={currentBookmark}
-                  isProcessing={triageState.isProcessing}
-                />
-              </div>
+              <>
+                <div className="w-full max-w-4xl">
+                  <BookmarkCard 
+                    bookmark={currentBookmark}
+                    isProcessing={triageState.isProcessing}
+                  />
+                </div>
+                
+                {/* Selected Lists Display */}
+                {triageState.selectedLists.length > 0 && (
+                  <div className="w-full max-w-4xl mt-4">
+                    <div className="bg-base-100 p-4 rounded-lg">
+                      <p className="text-sm font-semibold text-base-content mb-2">
+                        Selected for assignment: {triageState.selectedLists.length} list{triageState.selectedLists.length !== 1 ? 's' : ''}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {triageState.selectedLists.map(listId => {
+                          const list = availableLists.find(l => l.id === listId);
+                          return list ? (
+                            <span key={listId} className="badge badge-secondary badge-lg">
+                              {list.icon} {list.name}
+                            </span>
+                          ) : null;
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
           

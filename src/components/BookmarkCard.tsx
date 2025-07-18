@@ -1,5 +1,4 @@
-import { Avatar } from '@mui/material';
-import { Bookmark } from '@mui/icons-material';
+import { BookmarkIcon } from '@heroicons/react/24/outline';
 
 interface BookmarkCardProps {
   bookmark: any;
@@ -36,7 +35,7 @@ export const BookmarkCard = ({ bookmark, isProcessing }: BookmarkCardProps) => {
   
   return (
     <div 
-      className={`BookmarkCard card bg-base-100 shadow-md hover:shadow-lg transition-all duration-300 ${
+      className={`BookmarkCard bg-base-100 transition-all duration-300 border-0 outline-0 shadow-none ${
         isProcessing 
           ? 'opacity-50' 
           : 'cursor-pointer hover:bg-base-50'
@@ -44,16 +43,24 @@ export const BookmarkCard = ({ bookmark, isProcessing }: BookmarkCardProps) => {
       style={{ width: '100%', maxWidth: 600 }}
       onClick={handleCardClick}
     >
-      <div className="card-body">
+      <div className="p-6">
         {/* Header with favicon and domain */}
         <div className="flex items-start gap-4 mb-4">
-          <Avatar 
-            src={bookmark.content?.favicon} 
-            sx={{ width: 48, height: 48 }}
-            className="mt-1"
-          >
-            <Bookmark />
-          </Avatar>
+          <div className="avatar mt-1">
+            <div className="w-12 h-12 rounded">
+              {bookmark.content?.favicon ? (
+                <img 
+                  src={bookmark.content.favicon} 
+                  alt={domain}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-primary/20 flex items-center justify-center">
+                  <BookmarkIcon className="w-6 h-6 text-primary" />
+                </div>
+              )}
+            </div>
+          </div>
           <div className="flex-1">
             <h2 className="text-lg font-bold text-base-content leading-6 mb-1">
               {bookmark.content?.title || bookmark.title || 'Untitled'}
@@ -162,7 +169,7 @@ export const BookmarkCard = ({ bookmark, isProcessing }: BookmarkCardProps) => {
         )}
         
         {/* Metadata */}
-        <div className="mt-6 pt-4 border-t border-base-200">
+        <div className="mt-6 pt-4">
           <div className="flex justify-between text-sm text-base-content/60">
             <span>Created: {new Date(bookmark.createdAt).toLocaleDateString()}</span>
             {bookmark.updatedAt && (

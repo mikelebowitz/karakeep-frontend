@@ -67,12 +67,12 @@ export const DEFAULT_TRIAGE_KEYS: TriageKeyboardConfig = {
   
   // Alternative navigation
   NEXT: { 
-    key: 'j', 
+    key: 'ArrowRight', 
     description: 'Next bookmark',
     action: 'NEXT'
   },
   PREVIOUS: { 
-    key: 'k', 
+    key: 'ArrowLeft', 
     description: 'Previous bookmark',
     action: 'PREVIOUS'
   },
