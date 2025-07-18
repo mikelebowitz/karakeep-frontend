@@ -1,4 +1,4 @@
-# Karakeep - Bookmark Management System
+# Karakeep Triager - An experiment in new UI for the excellent Karakeep Bookmark Management System
 
 A modern, productivity-focused bookmark management system with a React-Admin frontend and comprehensive organizational features.
 
