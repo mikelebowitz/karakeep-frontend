@@ -1,6 +1,8 @@
-# Karakeep Triager - An experiment in new UI for the excellent Karakeep Bookmark Management System
+# Karakeep Alternative UI - An Experimental Frontend for Karakeep
 
-A modern, productivity-focused bookmark management system with a React-Admin frontend and comprehensive organizational features.
+**⚠️ DISCLAIMER**: This is an unofficial, experimental UI project for the [Karakeep bookmark management system](https://github.com/karakeep/karakeep). This is NOT the official Karakeep project, but rather a humble attempt to explore alternative UI approaches for the excellent Karakeep backend API.
+
+A modern, productivity-focused experimental frontend built with React-Admin, designed to work with the Karakeep REST API.
 
 ![React](https://img.shields.io/badge/React-19.1-blue)
 ![React-Admin](https://img.shields.io/badge/React--Admin-5.9-orange)
@@ -10,7 +12,17 @@ A modern, productivity-focused bookmark management system with a React-Admin fro
 
 ## 📚 Project Overview
 
-Karakeep is a comprehensive bookmark management solution designed for power users who need efficient tools for organizing, categorizing, and retrieving their saved web content. The system provides advanced features like batch operations, real-time search, keyboard shortcuts, and a triage mode for rapid content processing.
+This project is an experimental alternative frontend for the Karakeep bookmark management system. It aims to explore different UI/UX approaches, particularly focused on rapid triage workflows and keyboard-driven interactions. The frontend connects to the official Karakeep REST API and provides features like batch operations, real-time search, keyboard shortcuts, and a specialized triage mode for rapid content processing.
+
+### About This Project
+
+This is an independent project created to:
+- Explore alternative UI approaches for bookmark management
+- Experiment with triage-focused workflows
+- Test React-Admin as a framework for productivity applications
+- Learn from and potentially contribute ideas back to the Karakeep community
+
+**This project requires a running Karakeep backend API to function.**
 
 ### Key Features
 
@@ -30,7 +42,7 @@ Karakeep is a comprehensive bookmark management solution designed for power user
 
 - Node.js 18 or higher
 - npm or yarn
-- Backend API running (see API documentation)
+- Karakeep backend API running (see [official Karakeep documentation](https://github.com/karakeep/karakeep))
 
 ### Development Setup
 
@@ -147,7 +159,7 @@ karakeep-frontend/
 
 ## 🔌 API Integration
 
-The frontend integrates with the Karakeep REST API through:
+This experimental frontend integrates with the official Karakeep REST API through:
 
 - **Authentication**: `POST /auth/login`, `POST /auth/refresh`
 - **Bookmarks**: Full CRUD with pagination and search
@@ -158,7 +170,7 @@ See `docs/KARAKEEP_API_ENDPOINTS.md` for complete API documentation.
 
 ## 🚀 Deployment
 
-The frontend is configured for automatic deployment to Vercel:
+This experimental frontend is configured for automatic deployment to Vercel:
 
 1. **GitHub Integration**: Connected to `mikelebowitz/karakeep-frontend`
 2. **Environment Variables**: Configure `VITE_API_URL` in Vercel dashboard
@@ -171,7 +183,7 @@ npm run build  # Creates production build in dist/
 
 ## 🤝 Contributing
 
-1. Fork the frontend repository: `github.com/mikelebowitz/karakeep-frontend`
+1. Fork this repository: `github.com/mikelebowitz/karakeep-frontend`
 2. Create a feature branch: `git checkout -b feature/amazing-feature`
 3. Make your changes following the existing code patterns
 4. Ensure TypeScript and ESLint pass: `npm run build && npm run lint`
@@ -199,9 +211,23 @@ npm run build  # Creates production build in dist/
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 🙏 Acknowledgments
+## 🙏 Acknowledgments & Attribution
 
+### Original Project
+**This is an experimental UI for [Karakeep](https://github.com/karakeep/karakeep)**, an excellent bookmark management system. All credit for the backend API, data models, and core bookmark management concepts goes to the Karakeep team and contributors.
+
+This project is:
+- ✅ An independent experiment in alternative UI/UX approaches
+- ✅ A learning project exploring React-Admin for productivity apps
+- ✅ Open source and available for anyone to use or learn from
+- ❌ NOT officially affiliated with or endorsed by Karakeep
+- ❌ NOT a replacement for the official Karakeep frontend
+
+### Technologies Used
 - Built with [React-Admin](https://marmelab.com/react-admin/)
 - UI components from [DaisyUI](https://daisyui.com/)
 - Icons from [Heroicons](https://heroicons.com/)
 - Bundled with [Vite](https://vitejs.dev/)
+
+### Special Thanks
+To the Karakeep team for creating an excellent bookmark management API that made this UI experiment possible.

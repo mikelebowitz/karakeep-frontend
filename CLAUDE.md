@@ -2,30 +2,23 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Project Context
+
+This is an **experimental alternative UI** for the Karakeep bookmark management system. It is NOT the official Karakeep frontend, but rather an independent project exploring different UI/UX approaches using React-Admin.
+
 ## Repository Structure
 
-This project uses a multi-repository structure:
+This is a single repository containing both the frontend code and all documentation:
+- GitHub: `git@github.com:mikelebowitz/karakeep-frontend.git`
+- All code and documentation changes should be made in this repository
 
-1. **Main Repository** (`/karakeep-app/`): Documentation and planning repository containing:
-   - Project documentation (requirements.md, prd.md, techstack.md, etc.)
-   - Architecture decisions and flow diagrams
-   - This CLAUDE.md file for AI assistance
+## Karakeep Alternative UI - React-Admin Bookmark Manager
 
-2. **Frontend Repository** (`worktrees/karakeep-app-creation/karakeep-frontend-repo/`):
-   - Active development repository for the React-Admin frontend
-   - Connected to GitHub: `git@github.com:mikelebowitz/karakeep-frontend.git`
-   - All frontend code changes should be made here
-
-## Karakeep Frontend - React-Admin Bookmark Manager
-
-This is a React-Admin based frontend for the Karakeep bookmark management system.
+This is an experimental React-Admin based frontend designed to work with the official Karakeep REST API.
 
 ## Working Directory
 
-When working on frontend code, always navigate to the frontend repository:
-```bash
-cd /Users/mikelebowitz/Documents/Code/karakeep-app/worktrees/karakeep-app-creation/karakeep-frontend-repo
-```
+This is a single repository - all work happens in the repository root.
 
 ## Common Development Commands
 
@@ -85,23 +78,21 @@ Implemented in `KeyboardShortcuts.tsx`:
 - `?`: Help
 
 ## Documentation Files
-- `requirements.md`: Source of truth for project requirements
-- `prd.md`: Product specification and features
-- `techstack.md`: Technical decisions and architecture
-- `backend.md`: Backend implementation guide
-- `frontend.md`: Frontend implementation guide
-- `flow.md`: System and user flow documentation
-- `status.md`: Progress tracking and milestones
+- `docs/requirements.md`: Source of truth for project requirements
+- `docs/prd.md`: Product specification and features
+- `docs/techstack.md`: Technical decisions and architecture
+- `docs/status.md`: Progress tracking and milestones
 - `DEVELOPMENT_PROGRESS.md`: Session-by-session development progress
 - `TRIAGE_MODE_SPECIFICATION.md`: Detailed specification for triage mode implementation
 - `docs/KARAKEEP_API_ENDPOINTS.md`: Comprehensive API endpoint documentation
 
 ## Development Workflow
 1. Always check existing patterns before implementing new features
-2. Update `status.md` after completing tasks
+2. Update `docs/status.md` after completing tasks
 3. Follow React-Admin conventions for resources and providers
 4. Use DaisyUI components and Tailwind CSS classes (migrating away from Material UI)
 5. Check `src/theme/daisyuiTheme.ts` for theme configuration
+6. Remember this is an experimental UI - feel free to explore creative solutions
 
 ## Current Development Status
 
