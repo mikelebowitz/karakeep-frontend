@@ -1,15 +1,15 @@
-import type { AuthProvider } from 'react-admin';
-import axios from 'axios';
-import type { AuthResponse } from '../types';
+import type { AuthProvider } from '@refinedev/core';
+import axiosInstance from '../lib/axios';
+import type { AuthResponse, User } from '../types';
 
 const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 const apiToken = import.meta.env.VITE_API_TOKEN;
 
 export const authProvider: AuthProvider = {
-  login: async ({ username, password }) => {
+  login: async ({ email, password }) => {
     try {
-      const { data } = await axios.post<AuthResponse>(`${apiUrl}/auth/login`, {
-        email: username,
+      const { data } = await axiosInstance.post<AuthResponse>('/auth/login', {
+        email,
         password,
       });
 
@@ -17,9 +17,18 @@ export const authProvider: AuthProvider = {
       localStorage.setItem('refresh_token', data.refresh_token);
       localStorage.setItem('user', JSON.stringify(data.user));
 
-      return Promise.resolve();
-    } catch (error) {
-      return Promise.reject(error);
+      return {
+        success: true,
+        redirectTo: '/',
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: {
+          name: 'LoginError',
+          message: error.response?.data?.message || 'Invalid email or password',
+        },
+      };
     }
   },
 
@@ -28,59 +37,61 @@ export const authProvider: AuthProvider = {
       const token = localStorage.getItem('auth_token');
       
       if (token) {
-        await axios.post(
-          `${apiUrl}/auth/logout`,
-          {},
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        await axiosInstance.post('/auth/logout');
       }
     } catch (error) {
       // Continue with logout even if API call fails
+      console.error('Logout API call failed:', error);
     }
 
     localStorage.removeItem('auth_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user');
     
-    return Promise.resolve();
+    return {
+      success: true,
+      redirectTo: '/login',
+    };
   },
 
-  checkAuth: async () => {
+  check: async () => {
     // If we have an API token from environment, we're always authenticated
     if (apiToken) {
-      return Promise.resolve();
+      return {
+        authenticated: true,
+      };
     }
 
     const token = localStorage.getItem('auth_token');
     
     if (!token) {
-      return Promise.reject();
+      return {
+        authenticated: false,
+        redirectTo: '/login',
+      };
     }
 
     try {
       // Verify token is still valid
-      await axios.get(`${apiUrl}/auth/me`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await axiosInstance.get('/auth/me');
       
-      return Promise.resolve();
-    } catch (error) {
+      return {
+        authenticated: true,
+      };
+    } catch (error: any) {
       // Token is invalid
       localStorage.removeItem('auth_token');
       localStorage.removeItem('refresh_token');
       localStorage.removeItem('user');
       
-      return Promise.reject();
+      return {
+        authenticated: false,
+        redirectTo: '/login',
+      };
     }
   },
 
-  checkError: async (error) => {
+  onError: async (error) => {
     const status = error.response?.status;
     
     if (status === 401 || status === 403) {
@@ -88,10 +99,17 @@ export const authProvider: AuthProvider = {
       localStorage.removeItem('refresh_token');
       localStorage.removeItem('user');
       
-      return Promise.reject();
+      return {
+        logout: true,
+        redirectTo: '/login',
+        error: {
+          message: 'Your session has expired',
+          name: 'Unauthorized',
+        },
+      };
     }
     
-    return Promise.resolve();
+    return {};
   },
 
   getPermissions: async () => {
@@ -100,29 +118,101 @@ export const authProvider: AuthProvider = {
     const user = localStorage.getItem('user');
     
     if (user) {
-      return Promise.resolve('user');
+      return 'user';
     }
     
-    return Promise.reject();
+    return null;
   },
 
   getIdentity: async () => {
     const userStr = localStorage.getItem('user');
     
     if (!userStr) {
-      return Promise.reject();
+      return null;
     }
 
     try {
-      const user = JSON.parse(userStr);
+      const user: User = JSON.parse(userStr);
       
-      return Promise.resolve({
+      return {
         id: user.id,
-        fullName: user.name,
+        name: user.name,
         email: user.email,
-      });
+        avatar: undefined, // Add avatar logic if needed
+      };
     } catch (error) {
-      return Promise.reject();
+      return null;
+    }
+  },
+
+  // Optional: Add register method for future use
+  register: async ({ email, password, name }) => {
+    try {
+      const { data } = await axiosInstance.post<AuthResponse>('/auth/register', {
+        email,
+        password,
+        name,
+      });
+
+      localStorage.setItem('auth_token', data.access_token);
+      localStorage.setItem('refresh_token', data.refresh_token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+
+      return {
+        success: true,
+        redirectTo: '/',
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: {
+          name: 'RegisterError',
+          message: error.response?.data?.message || 'Registration failed',
+        },
+      };
+    }
+  },
+
+  // Optional: Add forgot password method for future use
+  forgotPassword: async ({ email }) => {
+    try {
+      await axiosInstance.post('/auth/forgot-password', { email });
+
+      return {
+        success: true,
+        redirectTo: '/login',
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: {
+          name: 'ForgotPasswordError',
+          message: error.response?.data?.message || 'Failed to send reset email',
+        },
+      };
+    }
+  },
+
+  // Optional: Add update password method for future use
+  updatePassword: async ({ password, confirmPassword }) => {
+    try {
+      await axiosInstance.post('/auth/update-password', {
+        password,
+        confirmPassword,
+      });
+
+      return {
+        success: true,
+        redirectTo: '/login',
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: {
+          name: 'UpdatePasswordError',
+          message: error.response?.data?.message || 'Failed to update password',
+        },
+      };
     }
   },
 };

@@ -1,67 +1,55 @@
-import { Admin, Resource, Layout, CustomRoutes } from 'react-admin';
-import type { LayoutProps } from 'react-admin';
-import { Route } from 'react-router-dom';
-import { BookmarkBorder } from '@mui/icons-material';
-import daisyuiTheme from './theme/daisyuiTheme';
-import { dataProvider } from './providers/dataProvider';
-import { authProvider } from './providers/authProvider';
-import { LoginPage } from './pages/Login';
-import { BookmarkList, BookmarkEdit, BookmarkCreate } from './pages/bookmarks';
-import { TriageMode } from './pages/triage';
-import { KeyboardShortcuts } from './components/KeyboardShortcuts';
+import { Refine } from "@refinedev/core";
+import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
+import routerProvider from "@refinedev/react-router-v6";
+import dataProvider from "@refinedev/simple-rest";
+import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
 
-const MyLayout = (props: LayoutProps) => {
-  return (
-    <>
-      <KeyboardShortcuts />
-      <Layout {...props} sidebar={() => null} />
-    </>
-  );
-};
+import { Layout } from "./components/Layout";
+import { BookmarkList } from "./pages/bookmarks/list";
+import { BookmarkShow } from "./pages/bookmarks/show";
+import { BookmarkEdit } from "./pages/bookmarks/edit";
+import { BookmarkCreate } from "./pages/bookmarks/create";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 
 function App() {
-  console.log('App component rendering...');
-  console.log('Environment variables:', {
-    API_URL: import.meta.env.VITE_API_URL,
-    API_TOKEN: import.meta.env.VITE_API_TOKEN ? 'Present' : 'Missing'
-  });
-
   return (
-    <Admin
-      dataProvider={dataProvider}
-      authProvider={authProvider}
-      loginPage={LoginPage}
-      requireAuth
-      layout={MyLayout}
-      theme={daisyuiTheme}
-    >
-      <Resource
-        name="bookmarks"
-        list={BookmarkList}
-        edit={BookmarkEdit}
-        create={BookmarkCreate}
-        icon={BookmarkBorder}
-      />
-      {/* Temporarily disabled while focusing on bookmarks display */}
-      {/* <Resource
-        name="tags"
-        list={TagList}
-        edit={TagEdit}
-        create={TagCreate}
-        icon={Label}
-      />
-      <Resource
-        name="lists"
-        list={ListList}
-        edit={ListEdit}
-        create={ListCreate}
-        icon={FolderOutlined}
-      /> */}
-      
-      <CustomRoutes>
-        <Route path="/triage" element={<TriageMode />} />
-      </CustomRoutes>
-    </Admin>
+    <BrowserRouter>
+      <RefineKbarProvider>
+        <Refine
+          routerProvider={routerProvider}
+          dataProvider={dataProvider(API_URL)}
+          resources={[
+            {
+              name: "bookmarks",
+              list: "/bookmarks",
+              show: "/bookmarks/show/:id",
+              edit: "/bookmarks/edit/:id",
+              create: "/bookmarks/create",
+              meta: {
+                canDelete: true,
+              },
+            },
+          ]}
+        >
+          <Routes>
+            <Route
+              element={
+                <Layout>
+                  <Outlet />
+                </Layout>
+              }
+            >
+              <Route path="/bookmarks" element={<BookmarkList />} />
+              <Route path="/bookmarks/show/:id" element={<BookmarkShow />} />
+              <Route path="/bookmarks/edit/:id" element={<BookmarkEdit />} />
+              <Route path="/bookmarks/create" element={<BookmarkCreate />} />
+            </Route>
+          </Routes>
+          <RefineKbar />
+        </Refine>
+      </RefineKbarProvider>
+    </BrowserRouter>
   );
 }
 
