@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 scripts/hooks/post-tool-use.py",
+            "description": "GitOps automation for development work capture"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 scripts/hooks/session-stop.py",
+            "description": "Process batched GitOps operations at session end"
+          }
+        ]
+      }
+    ]
+  }
+}
