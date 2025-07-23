@@ -153,9 +153,8 @@ class GitOpsHook:
                 # Push to GitHub if configured
                 if self.config.get("github", {}).get("auto_push", True):
                     remote = self.config.get("github", {}).get("remote", "origin")
-                    branch = self.config.get("github", {}).get("branch")
                     
-                    if self.commit_creator.push_to_remote(remote, branch):
+                    if self.commit_creator.push_to_remote(remote):
                         print("Pushed to GitHub successfully", file=sys.stderr)
                     else:
                         print("Failed to push to GitHub", file=sys.stderr)
@@ -199,9 +198,8 @@ class GitOpsHook:
                 # Push to GitHub if configured
                 if self.config.get("github", {}).get("auto_push", True):
                     remote = self.config.get("github", {}).get("remote", "origin")
-                    branch = self.config.get("github", {}).get("branch")
                     
-                    if self.commit_creator.push_to_remote(remote, branch):
+                    if self.commit_creator.push_to_remote(remote):
                         print("Pushed session to GitHub successfully", file=sys.stderr)
             
             # Clear session data

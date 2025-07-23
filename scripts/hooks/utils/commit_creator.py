@@ -7,6 +7,7 @@ Creates meaningful commit messages and handles git operations.
 import subprocess
 import json
 import os
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -55,7 +56,18 @@ class CommitCreator:
     def push_to_remote(self, remote: str = "origin", branch: str = None) -> bool:
         """Push commits to remote repository."""
         if not branch:
-            branch = self.config.get("github", {}).get("branch", "main")
+            # Get current branch dynamically
+            branch_info = self.get_branch_info()
+            branch = branch_info.get('current_branch')
+            
+            # Fallback if dynamic detection fails
+            if not branch or branch == 'unknown':
+                # Try config first, then default to main
+                fallback_branch = self.config.get("github", {}).get("branch", "main")
+                branch = fallback_branch
+                print(f"Warning: Could not detect current branch, using fallback: {branch}", file=sys.stderr)
+            else:
+                print(f"Detected current branch: {branch}", file=sys.stderr)
         
         try:
             # Check if remote exists

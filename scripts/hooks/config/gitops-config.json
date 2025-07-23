@@ -29,8 +29,8 @@
   "github": {
     "auto_push": true,
     "remote": "origin",
-    "branch": "feature/advanced-search-filtering",
-    "create_releases": false
+    "create_releases": false,
+    "branch_detection": "dynamic"
   },
   "documentation": {
     "update_progress": true,

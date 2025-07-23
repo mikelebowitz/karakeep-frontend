@@ -181,6 +181,7 @@ npm run preview      # Preview production build
 ### Hook Features:
 - **Automatic Documentation**: Session summaries in `docs/sessions/`
 - **GitOps Automation**: Commits with conventional commit messages
+- **Branch-Agnostic**: Works on any branch without configuration changes
 - **Progress Tracking**: Updates to status files
 - **Context Preservation**: Never lose work during compaction
 
