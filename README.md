@@ -182,10 +182,11 @@ This project was successfully migrated from React-Admin to Refine for better per
 
 ## 📚 Documentation
 
-- [`CLAUDE.md`](./CLAUDE.md) - Development guide and project context
-- [`REFINE_MIGRATION_ASSETS.md`](./REFINE_MIGRATION_ASSETS.md) - Migration reference materials
-- [`REFINE_MIGRATION_PROGRESS.md`](./REFINE_MIGRATION_PROGRESS.md) - Detailed migration status
-- [`archive/README.md`](./archive/README.md) - Archived React-Admin implementation
+- **[Documentation Hub](docs/README.md)** - Complete navigation to all documentation
+- **[Current Status](docs/STATUS.md)** - Project achievements and next priorities  
+- **[Development Guide](CLAUDE.md)** - AI assistant guidelines and project context
+- **[Security Policy](SECURITY.md)** - Security guidelines and secret handling
+- **[Migration Archive](docs/archive/)** - Complete React-Admin to Refine migration history
 
 ## 🏗 Architecture Benefits
 

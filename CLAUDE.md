@@ -83,21 +83,25 @@ npm run preview      # Preview production build
 ## Critical Implementation Details
 
 ### API Integration
-- Environment variable `VITE_API_URL` controls backend connection
-- JWT token handling (to be implemented)
-- RESTful API integration via Refine's simple-rest data provider
+- Environment variable `VITE_API_URL` controls backend connection (`/api`)
+- JWT authentication complete with automatic token refresh
+- Smart endpoint selection for optimal performance
+- Custom data provider with cursor-based pagination
+- Client-side filtering for complex queries
 
 ### Current State
-- **Refine Setup**: Complete with routing, data provider, and basic CRUD
-- **DaisyUI Integration**: Custom Karakeep themes configured
+- **Refine Setup**: Complete with routing, data provider, and comprehensive CRUD
+- **DaisyUI Integration**: Custom Karakeep themes with full component usage
+- **Authentication**: JWT token system with API key support (`ak1_*` format)
+- **Advanced Features**: Search, filtering, and two-tier bulk selection system
 - **Bundle Size**: 210KB gzipped (50% smaller than React-Admin)
-- **TypeScript**: Strict type checking enabled
-- **Bookmark Management**: Full CRUD interface with card-based display
+- **TypeScript**: Strict type checking enabled with full coverage
+- **Bookmark Management**: Professional-grade interface with keyboard navigation
 
 ### Routing Structure
-- `/bookmarks` - Bookmark listing (card view)
-- `/bookmarks/show/:id` - Bookmark detail view
-- `/bookmarks/edit/:id` - Bookmark editing form
+- `/bookmarks` - Advanced bookmark listing with search, filtering, and bulk operations
+- `/bookmarks/show/:id` - Bookmark detail view with triage modal
+- `/bookmarks/edit/:id` - Bookmark editing form with tag/list management
 - `/bookmarks/create` - New bookmark creation
 
 ### Theme Configuration
@@ -105,45 +109,55 @@ npm run preview      # Preview production build
 - **karakeep-dark** - Dark theme variant
 - Responsive design with mobile-first approach
 
-## Migration Status
+## Current Development Status
 
-### ✅ Completed (Refine Migration):
-- **Project Setup**: Vite + Refine + DaisyUI configuration
-- **Basic CRUD**: Complete bookmark management interface
+### ✅ Completed (Migration + Core Features):
+- **Complete Refine Migration**: Vite + Refine + DaisyUI with 50% bundle reduction
+- **Authentication System**: JWT with API token support and automatic refresh
+- **Advanced Search & Filtering**: Debounced search, tag/list filters, special filters
+- **Two-Tier Bulk Selection**: Visible vs all matching results with Cmd+Shift+A
+- **Professional Keyboard Navigation**: Complete keyboard control with global shortcuts
+- **Smart Data Provider**: Optimal endpoint selection with client-side filtering
+- **Claude Code Hooks**: Automated documentation and GitOps workflows
 - **Layout System**: Responsive drawer layout with navigation
-- **Form Handling**: React Hook Form integration
-- **TypeScript**: Full type safety implementation
-- **Archive System**: React-Admin files safely archived
+- **TypeScript**: Full type safety with strict mode compliance
 
 ### 🚧 In Progress:
-- **Authentication**: Porting JWT logic from React-Admin
-- **Custom Data Provider**: API integration with cursor pagination
-- **DaisyUI Configuration**: Optimizing component class usage
+- **Tag/List Picker Modals**: Implement filter dropdown functionality with + Add buttons
+- **Bulk Operations**: Wire up T/L/A/Delete keys to actual API operations
+- **Available Tags/Lists Loading**: Fetch options for filter dropdowns
 
 ### 📋 Next Priorities:
-1. **Authentication Provider**: Port JWT authentication from archive
-2. **Custom Data Provider**: Implement Karakeep API integration
-3. **Triage Mode**: Card-based bookmark processing interface
-4. **Keyboard Shortcuts**: Global shortcut system
-5. **Advanced Features**: Search, filtering, bulk operations
+1. **Complete Bulk Operations**: Implement actual tag/list assignment via keyboard
+2. **Triage Mode**: Card-based bookmark processing interface
+3. **URL Persistence**: Save filter state in URL for bookmarkable searches
+4. **Performance Optimizations**: Add caching for tags/lists data
 
-## Reference Materials
+## Documentation Structure
 
-### Archive Directory (`archive/`):
-Contains complete React-Admin implementation for reference:
-- `archive/react-admin-files/src/providers/` - Data and auth providers
-- `archive/react-admin-files/src/components/` - Custom components
-- `archive/react-admin-files/docs/` - API documentation
+### Core Documentation:
+- **[docs/README.md](docs/README.md)** - Documentation hub and navigation
+- **[docs/STATUS.md](docs/STATUS.md)** - Current project status and achievements
+- **[README.md](README.md)** - Main project documentation and setup
 
-### Migration Documentation:
-- `REFINE_MIGRATION_ASSETS.md` - Reusable code patterns from React-Admin
-- `REFINE_MIGRATION_PROGRESS.md` - Detailed migration status
-- `archive/README.md` - Archive contents explanation
+### Development Documentation:
+- **[docs/development/](docs/development/)** - Manual development logs and notes
+- **[docs/sessions/](docs/sessions/)** - Automated session documentation from hooks
 
-### Git History:
-- **Current Branch**: `refine-migration` (active development)
-- **Archive Branch**: `archive/react-admin-implementation`
-- **Archive Tag**: `v1.0-react-admin`
+### Archive Materials:
+- **[docs/archive/migration/](docs/archive/migration/)** - Complete migration documentation
+- **[archive/react-admin-files/](archive/react-admin-files/)** - Original React-Admin implementation
+- Reference data providers, components, and patterns
+
+### Automated Documentation (Claude Code Hooks):
+- **Session Documentation**: Generated before context compaction in `docs/sessions/`
+- **Changelog**: Automated updates to `CHANGELOG.md`
+- **Progress Tracking**: Automatic updates to status files
+
+### Current Branch Status:
+- **Active Branch**: `feature/advanced-search-filtering`
+- **Main Branch**: `main` (for PRs)
+- **Latest Work**: Advanced search/filtering system with bulk operations
 
 ## Development Workflow
 
@@ -151,8 +165,37 @@ Contains complete React-Admin implementation for reference:
 2. Use DaisyUI components and Tailwind CSS classes
 3. Follow TypeScript best practices with strict type checking
 4. Reference archived React-Admin code for API integration patterns
-5. Update this documentation when adding major features
+5. **Claude Code Hooks handle documentation automatically**:
+   - Session documentation generated before context compaction
+   - Git commits with descriptive messages
+   - Changelog updates and progress tracking
 6. Test thoroughly with actual API endpoints when available
+
+## Claude Code Hooks System
+
+### Active Hooks:
+- **`post-tool-use.py`**: Captures all Edit/Write/MultiEdit/Bash operations
+- **`pre-compact.py`**: Generates session documentation before context reset
+- **`session-stop.py`**: Creates batch commits when Claude session ends
+
+### Hook Features:
+- **Automatic Documentation**: Session summaries in `docs/sessions/`
+- **GitOps Automation**: Commits with conventional commit messages
+- **Progress Tracking**: Updates to status files
+- **Context Preservation**: Never lose work during compaction
+
+### Testing Hooks:
+```bash
+# Test individual hooks
+python3 scripts/hooks/test_hooks.py post-tool-use
+python3 scripts/hooks/test_hooks.py pre-compact
+
+# Test full workflow
+python3 scripts/hooks/test_hooks.py full
+
+# Enable debug mode
+CLAUDE_HOOKS_DEBUG=true
+```
 
 ## Key Benefits of Refine Migration
 

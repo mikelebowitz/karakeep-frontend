@@ -5,7 +5,8 @@
     "batch_commits": true,
     "target_tools": ["Edit", "Write", "MultiEdit", "Bash"],
     "documentation_files": [
-      "REFINE_MIGRATION_PROGRESS.md",
+      "docs/STATUS.md",
+      "docs/development/DEVELOPMENT_LOG.md",
       "CHANGELOG.md", 
       "README.md",
       "CLAUDE.md"

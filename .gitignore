@@ -12,13 +12,13 @@ dist
 dist-ssr
 *.local
 
-# Archive directory - reference files from React-Admin migration
-archive/
-
 # Archive directories should not include build artifacts  
 archive/**/node_modules/
 archive/**/dist/
 archive/**/*.local
+
+# But docs/archive/ should be tracked
+!docs/archive/
 
 # Environment variables - NEVER commit these!
 .env
