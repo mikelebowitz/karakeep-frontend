@@ -18,8 +18,20 @@
     "deny": []
   },
   "hooks": {
-    "post-tool-use": "scripts/hooks/post-tool-use.py",
-    "pre-compact": "scripts/hooks/pre-compact.py",
-    "session-stop": "scripts/hooks/session-stop.py"
+    "PostToolUse": [
+      {
+        "hooks": [{"type": "command", "command": "python3 scripts/hooks/post-tool-use.py"}]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [{"type": "command", "command": "python3 scripts/hooks/pre-compact.py"}]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [{"type": "command", "command": "/opt/homebrew/bin/python3 /Users/mikelebowitz/Documents/Code/karakeep-app/worktrees/karakeep-app-creation/karakeep-frontend-repo/scripts/hooks/session-stop-minimal.py"}]
+      }
+    ]
   }
 }

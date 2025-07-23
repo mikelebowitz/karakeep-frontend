@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__mcphub__sequential-thinking-sequentialthinking",
+      "mcp__mcphub__context7-resolve-library-id",
+      "WebFetch(domain:daisyui.com)",
+      "Bash(npm run build:*)",
+      "WebFetch(domain:docs.karakeep.app)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:context7.com)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "WebFetch(domain:docs.anthropic.com)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(find /usr/local -name \"*claude*\")",
+      "Bash(cp -r scripts/hooks scripts/hooks.backup)"
+    ],
+    "deny": []
+  }
+}

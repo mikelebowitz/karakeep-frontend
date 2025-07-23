@@ -1,0 +1,53 @@
+#!/usr/bin/env python3
+"""
+Claude Code Stop hook for GitOps session processing.
+Processes batched operations when Claude Code session ends.
+"""
+
+import sys
+import json
+import os
+from pathlib import Path
+
+# Add utils to Python path
+sys.path.insert(0, str(Path(__file__).parent / "utils"))
+
+from git_analyzer import GitAnalyzer
+from doc_generator import DocumentationGenerator
+from commit_creator import CommitCreator
+
+# Import GitOpsHook class directly from post-tool-use.py
+import importlib.util
+spec = importlib.util.spec_from_file_location("post_tool_use_module", Path(__file__).parent / "post-tool-use.py")
+post_tool_use_module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(post_tool_use_module)
+GitOpsHook = post_tool_use_module.GitOpsHook
+
+def main():
+    """Main session stop hook entry point."""
+    try:
+        # Debug output to confirm correct version is running
+        print(f"[DEBUG] session-stop.py v3.0-FIXED - File path: {__file__}", file=sys.stderr)
+        print(f"[DEBUG] Python version: {sys.version}", file=sys.stderr)
+        print(f"[DEBUG] Current working directory: {os.getcwd()}", file=sys.stderr)
+        # Read input from stdin (though Stop hooks may not have much context)
+        try:
+            input_data = json.load(sys.stdin)
+        except json.JSONDecodeError:
+            input_data = {}
+        
+        # Initialize hook
+        hook = GitOpsHook()
+        
+        # Process session end
+        success = hook.process_session_end()
+        
+        # Exit with appropriate code
+        sys.exit(0 if success else 1)
+        
+    except Exception as e:
+        print(f"Error in session stop hook: {e}", file=sys.stderr)
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()
