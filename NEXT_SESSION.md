@@ -1,6 +1,6 @@
 # Next Session Brief
 
-**Generated**: 2025-07-23 13:27
+**Generated**: 2025-07-23 13:28
 
 ## Quick Context
 
@@ -23,7 +23,9 @@ Check `docs/sessions/` for the latest session summary.
 ```
  M .claude/settings.json
  M CHANGELOG.md
-?? docs/sessions/SESSION_2025-07-23_13-27.md
+ M scripts/hooks/pre-compact.py
+?? .claude/settings.json.backup
+?? docs/sessions/SESSION_2025-07-23_13-28.md
 
 ```
 
