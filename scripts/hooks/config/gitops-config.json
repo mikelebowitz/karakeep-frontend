@@ -29,7 +29,7 @@
   "github": {
     "auto_push": true,
     "remote": "origin",
-    "branch": "refine-migration",
+    "branch": "feature/advanced-search-filtering",
     "create_releases": false
   },
   "documentation": {
