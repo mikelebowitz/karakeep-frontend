@@ -1,6 +1,7 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@plugin "daisyui" {
+  themes: light --default, dark;
+};
 
 /* Custom Karakeep styles */
 @layer base {
@@ -12,18 +13,7 @@
 }
 
 @layer components {
-  /* Custom component styles - use standard Tailwind classes until DaisyUI is fully configured */
-  .bookmark-card {
-    @apply bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-4;
-  }
-  
-  .tag-badge {
-    @apply inline-block px-2 py-1 text-xs rounded-full border border-gray-300 text-gray-700;
-  }
-  
-  .list-badge {
-    @apply inline-block px-2 py-1 text-xs rounded-full bg-blue-600 text-white;
-  }
+  /* Custom component styles - use classes directly in components instead of @apply */
 }
 
 @layer utilities {

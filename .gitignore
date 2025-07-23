@@ -12,6 +12,14 @@ dist
 dist-ssr
 *.local
 
+# Archive directory - reference files from React-Admin migration
+archive/
+
+# Archive directories should not include build artifacts  
+archive/**/node_modules/
+archive/**/dist/
+archive/**/*.local
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

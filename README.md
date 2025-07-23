@@ -118,6 +118,7 @@ This project was migrated from React-Admin to Refine for better performance and 
 - JWT authentication implementation
 - Custom data provider with API integration
 - DaisyUI component optimization
+- **GitOps automation** with Claude Code hooks for streamlined development
 
 ### 📅 Planned
 - Triage mode for bookmark processing

@@ -1,58 +1,8 @@
-export interface Bookmark {
-  id: string;
-  title?: string;
-  archived: boolean;
-  favourited: boolean;
-  taggingStatus: string;
-  summarizationStatus: string;
-  note?: string;
-  summary?: string;
-  tags: KarakeepTag[];
-  content: {
-    type: string;
-    url: string;
-    title?: string;
-    description?: string;
-    imageUrl?: string;
-    screenshotAssetId?: string;
-    favicon?: string;
-    htmlContent?: string;
-  };
-  createdAt: string;
-  modifiedAt: string;
-}
-
-export interface KarakeepTag {
-  id: string;
-  name: string;
-  attachedBy: 'ai' | 'human';
-}
-
-export interface Tag {
-  id: string;
-  name: string;
-  numBookmarks: number;
-  numBookmarksByAttachedType: {
-    ai: number;
-    human: number;
-  };
-}
-
-export interface List {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  parentId?: string;
-  type: 'manual' | 'smart';
-  query?: string;
-  public: boolean;
-}
-
+// Authentication types
 export interface User {
   id: string;
-  email: string;
   name: string;
+  email: string;
   created_at: string;
   updated_at: string;
 }
@@ -63,9 +13,112 @@ export interface AuthResponse {
   user: User;
 }
 
-export interface PaginatedResponse<T> {
-  data: T[];
-  total: number;
-  page: number;
-  per_page: number;
+// API response types for bookmark management
+export interface Bookmark {
+  id: string;
+  content: {
+    url?: string;
+    title?: string;
+    description?: string;
+  };
+  tags: string[];
+  lists: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Tag {
+  id: string;
+  name: string;
+  color?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface List {
+  id: string;
+  name: string;
+  icon?: string;
+  parent_id?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// API response wrappers
+export interface BookmarksResponse {
+  bookmarks: Bookmark[];
+  nextCursor?: string;
+  total?: number;
+}
+
+export interface TagsResponse {
+  tags: Tag[];
+  total?: number;
+}
+
+export interface ListsResponse {
+  lists: List[];
+  total?: number;
+}
+
+// Form types
+export interface CreateBookmarkForm {
+  content: {
+    url?: string;
+    title?: string;
+    description?: string;
+  };
+  tags?: string[];
+  lists?: string[];
+}
+
+export interface UpdateBookmarkForm extends CreateBookmarkForm {
+  id: string;
+}
+
+export interface CreateTagForm {
+  name: string;
+  color?: string;
+}
+
+export interface CreateListForm {
+  name: string;
+  icon?: string;
+  parent_id?: string;
+}
+
+// Component props types
+export interface BookmarkCardProps {
+  bookmark: Bookmark;
+  onEdit?: (bookmark: Bookmark) => void;
+  onDelete?: (bookmarkId: string) => void;
+}
+
+export interface TagSelectorProps {
+  selectedTags: string[];
+  onChange: (tags: string[]) => void;
+}
+
+export interface ListSelectorProps {
+  selectedLists: string[];
+  onChange: (lists: string[]) => void;
+}
+
+// API error types
+export interface ApiError {
+  message: string;
+  code?: string;
+  field?: string;
+}
+
+// Pagination types
+export interface CursorPagination {
+  limit: number;
+  cursor?: string;
+  includeContent?: boolean;
+}
+
+export interface OffsetPagination {
+  limit: number;
+  offset: number;
 }

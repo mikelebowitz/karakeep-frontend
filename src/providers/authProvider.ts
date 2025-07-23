@@ -1,9 +1,9 @@
 import type { AuthProvider } from '@refinedev/core';
 import axiosInstance from '../lib/axios';
 import type { AuthResponse, User } from '../types';
+import { apiConfig } from '../config/api.config';
 
-const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-const apiToken = import.meta.env.VITE_API_TOKEN;
+const apiToken = apiConfig.apiToken;
 
 export const authProvider: AuthProvider = {
   login: async ({ email, password }) => {
@@ -55,8 +55,12 @@ export const authProvider: AuthProvider = {
   },
 
   check: async () => {
+    console.log('🔐 Auth check called');
+    console.log('🔑 API token from env:', apiToken ? '[PRESENT]' : '[MISSING]');
+    
     // If we have an API token from environment, we're always authenticated
     if (apiToken) {
+      console.log('✅ Using API token authentication');
       return {
         authenticated: true,
       };
@@ -93,6 +97,12 @@ export const authProvider: AuthProvider = {
 
   onError: async (error) => {
     const status = error.response?.status;
+    
+    // If we're using API token authentication, don't logout on 401
+    if (apiToken) {
+      console.error('API request failed with status:', status);
+      return {};
+    }
     
     if (status === 401 || status === 403) {
       localStorage.removeItem('auth_token');

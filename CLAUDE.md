@@ -6,6 +6,36 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is the **Karakeep Frontend** - a modern React application built with Refine and DaisyUI for bookmark management. This project has been migrated from React-Admin to Refine for better performance and maintainability.
 
+## AI Assistant Guidelines
+
+When working on this project, AI assistants MUST follow these guidelines:
+
+### **Sequential Thinking Requirement**
+- **ALWAYS** use the Sequential Thinking tool when in Plan mode for complex tasks
+- Use it to break down problems, analyze requirements, and plan implementation steps
+- Especially important for:
+  - New feature implementation
+  - Complex refactoring tasks
+  - API integration work
+  - Multi-step migrations
+
+### **Documentation Review Requirement**
+- **ALWAYS** review relevant documentation with Context7 before implementing new code
+- Required for any work involving:
+  - Refine framework patterns and hooks
+  - DaisyUI component usage
+  - React Hook Form integration
+  - TypeScript best practices
+  - API integration patterns
+
+### **Examples:**
+- Before adding a new Refine resource → Use Context7 to review Refine documentation
+- Before implementing new DaisyUI components → Use Context7 to review DaisyUI docs
+- Before planning a complex feature → Use Sequential Thinking to break it down
+- Before API integration → Use Context7 to review Refine data provider patterns
+
+These tools ensure thorough planning and adherence to framework best practices.
+
 ## Repository Structure
 
 This is a single repository containing both the frontend code and all documentation:
@@ -143,3 +173,7 @@ VITE_API_TOKEN=your_dev_token_here
 ```
 
 The project is now running on Refine with a clean, maintainable architecture that's ready for production use.
+
+## Development Notes
+
+- remember to let me run the dev server in a different terminal session

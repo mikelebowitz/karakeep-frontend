@@ -1,13 +1,15 @@
 import axios from 'axios';
+import { apiConfig } from '../config/api.config';
 
-const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-const apiToken = import.meta.env.VITE_API_TOKEN;
+const apiUrl = apiConfig.apiUrl;
+const apiToken = apiConfig.apiToken;
 
 // Create axios instance
 export const axiosInstance = axios.create({
   baseURL: apiUrl,
   headers: {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
   },
 });
 
@@ -40,6 +42,11 @@ axiosInstance.interceptors.response.use(
   },
   async (error) => {
     const originalRequest = error.config;
+
+    // If we're using API token authentication, don't try to refresh JWT tokens
+    if (apiToken) {
+      return Promise.reject(error);
+    }
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
