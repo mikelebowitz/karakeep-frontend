@@ -20,6 +20,11 @@ archive/**/node_modules/
 archive/**/dist/
 archive/**/*.local
 
+# Environment variables - NEVER commit these!
+.env
+.env.local
+.env.*.local
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
