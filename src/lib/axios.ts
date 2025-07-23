@@ -4,6 +4,15 @@ import { apiConfig } from '../config/api.config';
 const apiUrl = apiConfig.apiUrl;
 const apiToken = apiConfig.apiToken;
 
+// Debug logging in development
+if (apiConfig.isDevelopment) {
+  console.log('🔧 API Configuration:', {
+    apiUrl,
+    hasToken: !!apiToken,
+    tokenPrefix: apiToken ? apiToken.substring(0, 10) + '...' : 'none'
+  });
+}
+
 // Create axios instance
 export const axiosInstance = axios.create({
   baseURL: apiUrl,
@@ -19,6 +28,9 @@ axiosInstance.interceptors.request.use(
     // If we have an API token from environment, use it
     if (apiToken) {
       config.headers.Authorization = `Bearer ${apiToken}`;
+      if (apiConfig.isDevelopment) {
+        console.log('🔑 Using API token for request to:', config.url);
+      }
       return config;
     }
 
@@ -26,6 +38,11 @@ axiosInstance.interceptors.request.use(
     const token = localStorage.getItem('auth_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      if (apiConfig.isDevelopment) {
+        console.log('🔑 Using localStorage token for request to:', config.url);
+      }
+    } else if (apiConfig.isDevelopment) {
+      console.warn('⚠️ No authentication token available for request to:', config.url);
     }
 
     return config;
@@ -45,6 +62,13 @@ axiosInstance.interceptors.response.use(
 
     // If we're using API token authentication, don't try to refresh JWT tokens
     if (apiToken) {
+      if (apiConfig.isDevelopment) {
+        console.error('🚨 API request failed:', {
+          status: error.response?.status,
+          url: error.config?.url,
+          message: error.response?.data?.message || error.message
+        });
+      }
       return Promise.reject(error);
     }
 
