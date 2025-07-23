@@ -1,6 +1,6 @@
 # Next Session Brief
 
-**Generated**: 2025-07-23 13:44
+**Generated**: 2025-07-23 17:51
 
 ## Quick Context
 
@@ -21,12 +21,31 @@ Check `docs/sessions/` for the latest session summary.
 ## Git Status Summary
 
 ```
- M .claude/settings.json
  M CHANGELOG.md
- M scripts/hooks/pre-compact.py
- M scripts/hooks/session-stop.py
-?? .claude/settings.json.backup
-?? docs/sessions/SESSION_2025-07-23_13-44.md
+ D scripts/hooks.backup/config/gitops-config.json
+ D scripts/hooks.backup/post-tool-use.py
+ D scripts/hooks.backup/pre-compact.py
+ D scripts/hooks.backup/session-stop-minimal.py
+ D scripts/hooks.backup/session-stop.py
+ D scripts/hooks.backup/session-stop.py.backup
+ D scripts/hooks.backup/test_hooks.py
+ D scripts/hooks.backup/utils/commit_creator.py
+ D scripts/hooks.backup/utils/doc_generator.py
+ D scripts/hooks.backup/utils/git_analyzer.py
+ D scripts/hooks/config/gitops-config.json
+ D scripts/hooks/post-tool-use.py
+ D scripts/hooks/pre-compact.py
+ D scripts/hooks/session-stop-minimal.py
+ D scripts/hooks/session-stop.py
+ D scripts/hooks/session-stop.py.backup
+ D scripts/hooks/test_hooks.py
+ D scripts/hooks/utils/commit_creator.py
+ D scripts/hooks/utils/doc_generator.py
+ D scripts/hooks/utils/git_analyzer.py
+ D scripts/test_hook_runner.sh
+ M src/providers/dataProvider.ts
+?? config/
+?? docs/sessions/SESSION_2025-07-23_17-51.md
 
 ```
 
