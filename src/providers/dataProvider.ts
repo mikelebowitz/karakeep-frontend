@@ -147,8 +147,8 @@ async function getBookmarksList({
   meta?: any;
 }) {
   // Check if we have a search query in filters
-  const searchFilter = filters?.find(filter => filter.field === "q");
-  const isSearch = searchFilter && searchFilter.value;
+  const searchFilter = filters?.find(filter => 'field' in filter && filter.field === "q");
+  const isSearch = searchFilter && 'value' in searchFilter && searchFilter.value;
   
   // Get cursor for current page
   const cursor = cursorStorage.bookmarks.get(current);
@@ -164,7 +164,7 @@ async function getBookmarksList({
   }
 
   // If search query, add it and use search endpoint
-  if (isSearch) {
+  if (isSearch && searchFilter && 'value' in searchFilter) {
     params.q = searchFilter.value;
   }
   
@@ -173,16 +173,16 @@ async function getBookmarksList({
   let useSpecialEndpoint = false;
   
   // Check for tag filters
-  const tagFilter = filters?.find(filter => filter.field === "tagIds");
-  const listFilter = filters?.find(filter => filter.field === "listIds");
+  const tagFilter = filters?.find(filter => 'field' in filter && filter.field === "tagIds");
+  const listFilter = filters?.find(filter => 'field' in filter && filter.field === "listIds");
   
   // Single tag filter - use dedicated endpoint
-  if (tagFilter && tagFilter.value?.length === 1 && !listFilter && !isSearch) {
+  if (tagFilter && 'value' in tagFilter && tagFilter.value?.length === 1 && !listFilter && !isSearch) {
     endpoint = `/tags/${tagFilter.value[0]}/bookmarks`;
     useSpecialEndpoint = true;
   }
   // Single list filter - use dedicated endpoint
-  else if (listFilter && listFilter.value?.length === 1 && !tagFilter && !isSearch) {
+  else if (listFilter && 'value' in listFilter && listFilter.value?.length === 1 && !tagFilter && !isSearch) {
     endpoint = `/lists/${listFilter.value[0]}/bookmarks`;
     useSpecialEndpoint = true;
   }
@@ -193,9 +193,9 @@ async function getBookmarksList({
   
   // For complex filters or search, we'll use client-side filtering after API call
   const needsClientFiltering = !useSpecialEndpoint && (
-    (tagFilter && tagFilter.value?.length > 0) || 
-    (listFilter && listFilter.value?.length > 0) ||
-    filters?.some(f => f.field === "untagged" || f.field === "unlisted")
+    (tagFilter && 'value' in tagFilter && tagFilter.value?.length > 0) || 
+    (listFilter && 'value' in listFilter && listFilter.value?.length > 0) ||
+    filters?.some(f => 'field' in f && (f.field === "untagged" || f.field === "unlisted"))
   );
 
   try {
@@ -219,18 +219,18 @@ async function getBookmarksList({
     }
 
     // Ensure each bookmark has required properties and filter out invalid ones
-    bookmarks = bookmarks.filter(bookmark => {
+    bookmarks = bookmarks.filter((bookmark: any) => {
       return bookmark && typeof bookmark === 'object' && bookmark.id;
     });
 
     // Apply client-side filtering if needed
     if (needsClientFiltering) {
-      bookmarks = bookmarks.filter(bookmark => {
+      bookmarks = bookmarks.filter((bookmark: any) => {
         // Tag filtering (multiple tags)
-        if (tagFilter && tagFilter.value?.length > 0) {
+        if (tagFilter && 'value' in tagFilter && tagFilter.value?.length > 0) {
           const bookmarkTags = bookmark.tags || [];
-          const hasAllTags = tagFilter.value.every(tagId => 
-            bookmarkTags.some(tag => 
+          const hasAllTags = tagFilter.value.every((tagId: any) => 
+            bookmarkTags.some((tag: any) => 
               (typeof tag === 'string' ? tag : tag.id) === tagId
             )
           );
@@ -238,10 +238,10 @@ async function getBookmarksList({
         }
 
         // List filtering (multiple lists)
-        if (listFilter && listFilter.value?.length > 0) {
+        if (listFilter && 'value' in listFilter && listFilter.value?.length > 0) {
           const bookmarkLists = bookmark.lists || [];
-          const hasAllLists = listFilter.value.every(listId => 
-            bookmarkLists.some(list => 
+          const hasAllLists = listFilter.value.every((listId: any) => 
+            bookmarkLists.some((list: any) => 
               (typeof list === 'string' ? list : list.id) === listId
             )
           );
@@ -249,15 +249,15 @@ async function getBookmarksList({
         }
 
         // Untagged filter
-        const untaggedFilter = filters?.find(f => f.field === "untagged");
-        if (untaggedFilter && untaggedFilter.value) {
+        const untaggedFilter = filters?.find(f => 'field' in f && f.field === "untagged");
+        if (untaggedFilter && 'value' in untaggedFilter && untaggedFilter.value) {
           const bookmarkTags = bookmark.tags || [];
           if (bookmarkTags.length > 0) return false;
         }
 
         // Unlisted filter
-        const unlistedFilter = filters?.find(f => f.field === "unlisted");
-        if (unlistedFilter && unlistedFilter.value) {
+        const unlistedFilter = filters?.find(f => 'field' in f && f.field === "unlisted");
+        if (unlistedFilter && 'value' in unlistedFilter && unlistedFilter.value) {
           const bookmarkLists = bookmark.lists || [];
           if (bookmarkLists.length > 0) return false;
         }

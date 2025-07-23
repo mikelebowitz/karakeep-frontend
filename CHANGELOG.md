@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Updated source code: scripts/hooks.backup/post-tool-use.py, scripts/hooks.backup/pre-compact.py, scripts/hooks.backup/session-stop-minimal.py
+  (and 16 more files)
+- Updated configuration: cripts/hooks.backup/config/gitops-config.json, scripts/hooks/config/gitops-config.json
+
+
 ### Added
 - Create new utility
 - Updated source code: scripts/hooks/pre-compact.py, scripts/hooks/session-stop.py

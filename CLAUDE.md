@@ -173,30 +173,31 @@ npm run preview      # Preview production build
 
 ## Claude Code Hooks System
 
+### User-Level Hooks Configuration:
+- **Hook Location**: `~/.claude/hooks/` (user-level, works across all projects)
+- **Project Config**: `config/gitops-config.json` (project-specific settings)
+- **Session Storage**: `/tmp/claude-gitops-session.json` (temporary session data)
+
 ### Active Hooks:
-- **`post-tool-use.py`**: Captures all Edit/Write/MultiEdit/Bash operations
+- **`post-tool-use.py`**: Captures all Edit/Write/MultiEdit/Bash operations for GitOps automation
 - **`pre-compact.py`**: Generates session documentation before context reset
 - **`session-stop.py`**: Creates batch commits when Claude session ends
 
 ### Hook Features:
 - **Automatic Documentation**: Session summaries in `docs/sessions/`
 - **GitOps Automation**: Commits with conventional commit messages
+- **Project Auto-Discovery**: Automatically detects project root and configuration
 - **Branch-Agnostic**: Works on any branch without configuration changes
-- **Progress Tracking**: Updates to status files
+- **Progress Tracking**: Updates to status files and changelogs
 - **Context Preservation**: Never lose work during compaction
 
-### Testing Hooks:
-```bash
-# Test individual hooks
-python3 scripts/hooks/test_hooks.py post-tool-use
-python3 scripts/hooks/test_hooks.py pre-compact
+### Configuration:
+Hooks automatically find project configuration at:
+1. `config/gitops-config.json` (preferred)
+2. `scripts/hooks/config/gitops-config.json` (legacy)
+3. `.claude/gitops-config.json` (alternative)
 
-# Test full workflow
-python3 scripts/hooks/test_hooks.py full
-
-# Enable debug mode
-CLAUDE_HOOKS_DEBUG=true
-```
+No project-specific hook installation required - user-level hooks work across all projects.
 
 ## Key Benefits of Refine Migration
 
