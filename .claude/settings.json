@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__mcphub__sequential-thinking-sequentialthinking",
+      "mcp__mcphub__context7-resolve-library-id",
+      "mcp__mcphub__context7-get-library-docs",
+      "WebFetch(domain:daisyui.com)",
+      "WebFetch(domain:docs.karakeep.app)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:context7.com)",
+      "WebFetch(domain:docs.anthropic.com)",
+      "Bash(npm run build:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(python:scripts/hooks/*)"
+    ],
+    "deny": []
+  },
+  "hooks": {
+    "post-tool-use": "scripts/hooks/post-tool-use.py",
+    "pre-compact": "scripts/hooks/pre-compact.py",
+    "session-stop": "scripts/hooks/session-stop.py"
+  }
+}

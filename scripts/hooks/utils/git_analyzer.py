@@ -202,7 +202,7 @@ class GitAnalyzer:
             return 'tests'
         
         # Assets
-        if any(asset in filename_lower for ext in ['.png', '.jpg', '.svg', '.ico', '.woff']):
+        if any(ext in filename_lower for ext in ['.png', '.jpg', '.svg', '.ico', '.woff']):
             return 'assets'
         
         return 'other'

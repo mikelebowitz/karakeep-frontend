@@ -9,8 +9,8 @@ import json
 import os
 from pathlib import Path
 
-# Add utils to Python path
-sys.path.insert(0, str(Path(__file__).parent / "utils"))
+# Add parent directory to Python path to import post_tool_use
+sys.path.insert(0, str(Path(__file__).parent))
 
 from post_tool_use import GitOpsHook
 
