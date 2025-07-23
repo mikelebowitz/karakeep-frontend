@@ -1,25 +1,121 @@
 import { useList } from "@refinedev/core";
 import { useState, useEffect, useRef } from "react";
 
+interface FilterState {
+  search: string;
+  tagIds: string[];
+  listIds: string[];
+  showUntagged: boolean;
+  showUnlisted: boolean;
+}
+
 export const BookmarkList: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  
+  // Advanced filtering state
+  const [filters, setFilters] = useState<FilterState>({
+    search: "",
+    tagIds: [],
+    listIds: [],
+    showUntagged: false,
+    showUnlisted: false,
+  });
+  
+  // Two-tier selection state
+  const [selectAllMatching, setSelectAllMatching] = useState(false);
+  
+  // Sync search query with filters
+  useEffect(() => {
+    setFilters(prev => ({ ...prev, search: searchQuery }));
+  }, [searchQuery]);
+  
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+      setCurrentPage(1); // Reset to first page when search changes
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+  
+  // Build filters array for API
+  const apiFilters = [];
+  if (debouncedSearchQuery) {
+    apiFilters.push({ field: "q", operator: "eq", value: debouncedSearchQuery });
+  }
+  
+  // Add tag filters
+  if (filters.tagIds.length > 0) {
+    apiFilters.push({ field: "tagIds", operator: "in", value: filters.tagIds });
+  }
+  
+  // Add list filters  
+  if (filters.listIds.length > 0) {
+    apiFilters.push({ field: "listIds", operator: "in", value: filters.listIds });
+  }
+  
+  // Add special filters
+  if (filters.showUntagged) {
+    apiFilters.push({ field: "untagged", operator: "eq", value: true });
+  }
+  
+  if (filters.showUnlisted) {
+    apiFilters.push({ field: "unlisted", operator: "eq", value: true });
+  }
+  
   const { data, isLoading, error } = useList({
     resource: "bookmarks",
     pagination: {
       current: currentPage,
       pageSize: 20,
     },
+    filters: apiFilters.length > 0 ? apiFilters : undefined,
   });
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [focusedRowIndex, setFocusedRowIndex] = useState<number>(-1);
   const [triageBookmark, setTriageBookmark] = useState<any>(null);
   const tableRef = useRef<HTMLTableElement>(null);
-  const modalRef = useRef<HTMLDialogElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Handle global shortcuts
+      if (e.metaKey || e.ctrlKey) {
+        switch (e.key) {
+          case 'k':
+            e.preventDefault();
+            searchInputRef.current?.focus();
+            setIsSearchFocused(true);
+            return;
+          case 'a':
+            e.preventDefault();
+            if (e.shiftKey) {
+              // Cmd+Shift+A: Select all matching results
+              setSelectAllMatching(true);
+              setSelectedIds([]);
+            } else {
+              // Cmd+A: Select all visible bookmarks
+              setSelectAllMatching(false);
+              if (data?.data) {
+                setSelectedIds(data.data.map((b: any) => b.id));
+              }
+            }
+            return;
+          case 'd':
+            e.preventDefault();
+            // Deselect all
+            setSelectedIds([]);
+            setSelectAllMatching(false);
+            return;
+        }
+      }
+
       // Check if user is typing in an input field
       const activeElement = document.activeElement;
       if (
@@ -27,6 +123,35 @@ export const BookmarkList: React.FC = () => {
         activeElement?.tagName === 'TEXTAREA' ||
         (activeElement as HTMLElement)?.contentEditable === 'true'
       ) {
+        // If in search input, handle ESC to clear and blur
+        if (activeElement === searchInputRef.current && e.key === 'Escape') {
+          e.preventDefault();
+          setSearchQuery("");
+          searchInputRef.current?.blur();
+          setIsSearchFocused(false);
+        }
+        return;
+      }
+
+      // Handle ESC key (must be before modal blocking check)
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        // Close modal if open (priority)
+        if (triageBookmark) {
+          setTriageBookmark(null);
+        } else if (selectAllMatching || selectedIds.length > 0) {
+          // Clear all selections (both visible and "all matching")
+          setSelectAllMatching(false);
+          setSelectedIds([]);
+        } else if (focusedRowIndex >= 0) {
+          // Clear focus if row is focused
+          setFocusedRowIndex(-1);
+        }
+        return;
+      }
+
+      // Block other table navigation when modal is open
+      if (triageBookmark) {
         return;
       }
 
@@ -66,19 +191,6 @@ export const BookmarkList: React.FC = () => {
           if (focusedRowIndex >= 0 && focusedRowIndex <= maxIndex) {
             const bookmark = bookmarks[focusedRowIndex];
             setTriageBookmark(bookmark);
-            modalRef.current?.showModal();
-          }
-          break;
-        case "Escape":
-          e.preventDefault();
-          // Close modal if open
-          if (modalRef.current?.open) {
-            modalRef.current.close();
-            setTriageBookmark(null);
-          } else {
-            // Clear all selections and focus if modal is not open
-            setSelectedIds([]);
-            setFocusedRowIndex(-1);
           }
           break;
       }
@@ -90,7 +202,7 @@ export const BookmarkList: React.FC = () => {
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [data, focusedRowIndex]);
+  }, [data, focusedRowIndex, triageBookmark, selectedIds, selectAllMatching, debouncedSearchQuery, filters]);
 
   // Reset focus when page changes
   useEffect(() => {
@@ -147,17 +259,164 @@ export const BookmarkList: React.FC = () => {
         </a>
       </div>
 
+      {/* Search Bar */}
+      <div className="mb-6">
+        <div className="relative max-w-md">
+          <input
+            ref={searchInputRef}
+            type="text"
+            placeholder="Search bookmarks... (Cmd+K)"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={() => setIsSearchFocused(true)}
+            onBlur={() => setIsSearchFocused(false)}
+            className="input input-bordered w-full pr-10"
+          />
+          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+            <svg className="w-4 h-4 text-base-content/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+        </div>
+        {searchQuery && (
+          <div className="text-sm text-base-content/60 mt-2">
+            Searching for "{searchQuery}" • Press ESC to clear
+          </div>
+        )}
+      </div>
+
+      {/* Advanced Filters */}
+      <div className="mb-6 p-4 bg-base-200 rounded-lg">
+        <div className="space-y-3">
+          <span className="text-sm font-medium">Filters:</span>
+          
+          {/* Tag Filters */}
+          <div className="flex flex-wrap gap-2 items-center">
+            <span className="text-xs text-base-content/60 min-w-12">Tags:</span>
+            {filters.tagIds.length > 0 ? (
+              <div className="flex flex-wrap gap-1">
+                {filters.tagIds.map(tagId => (
+                  <span key={tagId} className="badge badge-outline badge-sm gap-1">
+                    {tagId}
+                    <button 
+                      onClick={() => setFilters(prev => ({
+                        ...prev,
+                        tagIds: prev.tagIds.filter(id => id !== tagId)
+                      }))}
+                      className="btn btn-ghost btn-xs p-0 h-3 w-3"
+                    >×</button>
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <span className="text-xs text-base-content/40">None selected</span>
+            )}
+            <button className="btn btn-ghost btn-xs">+ Add Tag</button>
+          </div>
+          
+          {/* List Filters */}
+          <div className="flex flex-wrap gap-2 items-center">
+            <span className="text-xs text-base-content/60 min-w-12">Lists:</span>
+            {filters.listIds.length > 0 ? (
+              <div className="flex flex-wrap gap-1">
+                {filters.listIds.map(listId => (
+                  <span key={listId} className="badge badge-primary badge-sm gap-1">
+                    {listId}
+                    <button 
+                      onClick={() => setFilters(prev => ({
+                        ...prev,
+                        listIds: prev.listIds.filter(id => id !== listId)
+                      }))}
+                      className="btn btn-ghost btn-xs p-0 h-3 w-3"
+                    >×</button>
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <span className="text-xs text-base-content/40">None selected</span>
+            )}
+            <button className="btn btn-ghost btn-xs">+ Add List</button>
+          </div>
+          
+          {/* Special Filters */}
+          <div className="flex gap-4 items-center">
+            <span className="text-xs text-base-content/60 min-w-12">Special:</span>
+            <label className="label cursor-pointer gap-2">
+              <input 
+                type="checkbox" 
+                className="checkbox checkbox-xs"
+                checked={filters.showUntagged}
+                onChange={(e) => setFilters(prev => ({
+                  ...prev,
+                  showUntagged: e.target.checked
+                }))}
+              />
+              <span className="label-text text-xs">Untagged</span>
+            </label>
+            
+            <label className="label cursor-pointer gap-2">
+              <input 
+                type="checkbox" 
+                className="checkbox checkbox-xs"
+                checked={filters.showUnlisted}
+                onChange={(e) => setFilters(prev => ({
+                  ...prev,
+                  showUnlisted: e.target.checked
+                }))}
+              />
+              <span className="label-text text-xs">No Lists</span>
+            </label>
+          </div>
+          
+          {/* Clear Filters */}
+          {(filters.tagIds.length > 0 || filters.listIds.length > 0 || filters.showUntagged || filters.showUnlisted) && (
+            <button 
+              onClick={() => setFilters(prev => ({
+                ...prev,
+                tagIds: [],
+                listIds: [],
+                showUntagged: false,
+                showUnlisted: false
+              }))}
+              className="btn btn-ghost btn-xs"
+            >
+              Clear All Filters
+            </button>
+          )}
+        </div>
+      </div>
+
       <div className="overflow-x-auto">
         <table className="table table-zebra" ref={tableRef}>
           <thead>
             <tr>
-              <th>
-                <input 
-                  type="checkbox" 
-                  className="checkbox checkbox-sm"
-                  checked={selectedIds.length === data?.data?.length && data.data.length > 0}
-                  onChange={(e) => handleSelectAll(e.target.checked)}
-                />
+              <th className="w-16">
+                <div className="tooltip tooltip-right" data-tip={
+                  selectAllMatching 
+                    ? "All matching results selected" 
+                    : selectedIds.length > 0 
+                      ? `${selectedIds.length} visible selected`
+                      : "Click to select visible, Cmd+Shift+A for all"
+                }>
+                  <input 
+                    type="checkbox" 
+                    className={`checkbox checkbox-sm ${selectAllMatching ? 'checkbox-warning' : ''}`}
+                    checked={selectAllMatching || (selectedIds.length === data?.data?.length && data.data.length > 0)}
+                    onChange={(e) => {
+                      if (selectAllMatching) {
+                        // Currently in "all matching" mode, clicking unchecks everything
+                        setSelectAllMatching(false);
+                        setSelectedIds([]);
+                      } else {
+                        // Normal mode, toggle visible selection
+                        handleSelectAll(e.target.checked);
+                      }
+                    }}
+                  />
+                  {selectAllMatching && (
+                    <span className="absolute -top-1 -right-1 text-warning text-xs">⚠️</span>
+                  )}
+                </div>
               </th>
               <th className="w-8"></th>
               <th>Title</th>
@@ -253,11 +512,21 @@ export const BookmarkList: React.FC = () => {
       )}
 
       {/* Bulk Actions Toast */}
-      {selectedIds.length > 0 && (
+      {(selectedIds.length > 0 || selectAllMatching) && (
         <div className="toast toast-center toast-bottom">
-          <div className="alert shadow-lg">
+          <div className={`alert shadow-lg ${selectAllMatching ? 'alert-warning' : ''}`}>
             <div>
-              <span>{selectedIds.length} items selected</span>
+              <span>
+                {selectAllMatching 
+                  ? "All matching results selected" 
+                  : `${selectedIds.length} items selected`
+                }
+              </span>
+              {selectAllMatching && (
+                <div className="text-xs mt-1 opacity-80">
+                  Press Cmd+D to deselect • T=Tags • L=Lists • A=Archive
+                </div>
+              )}
             </div>
             <div className="flex gap-2">
               <button className="btn btn-sm">Add Tags</button>
@@ -301,11 +570,11 @@ export const BookmarkList: React.FC = () => {
       )}
 
       {/* Triage Modal */}
-      <dialog ref={modalRef} className="modal">
-        <div className="modal-box max-w-5xl max-h-[90vh] overflow-y-auto p-0">
-          {triageBookmark && (
-            <>
-              {/* Header */}
+      {triageBookmark && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/50" onClick={() => setTriageBookmark(null)}></div>
+          <div className="relative bg-base-100 rounded-lg max-w-3xl max-h-[90vh] overflow-y-auto p-0 w-full shadow-2xl">
+            {/* Header */}
               <div className="p-6 pb-4">
                 <div className="flex items-start gap-4">
                   {triageBookmark.content?.favicon && (
@@ -325,9 +594,13 @@ export const BookmarkList: React.FC = () => {
                         href={triageBookmark.content.url} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="link link-primary text-sm break-all"
+                        className="link link-primary text-sm"
+                        title={triageBookmark.content.url}
                       >
-                        {triageBookmark.content.url}
+                        {triageBookmark.content.url.length > 60 
+                          ? triageBookmark.content.url.substring(0, 60) + '...'
+                          : triageBookmark.content.url
+                        }
                       </a>
                     )}
                   </div>
@@ -336,39 +609,9 @@ export const BookmarkList: React.FC = () => {
 
               {/* Content */}
               <div className="px-6 pb-6">
-                <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                  {/* Main Content */}
-                  <div className="lg:col-span-3 space-y-4">
-                    {triageBookmark.content?.image && (
-                      <div>
-                        <img 
-                          src={triageBookmark.content.image} 
-                          alt="Bookmark preview"
-                          className="w-full max-h-80 object-cover rounded-lg"
-                          onError={(e) => e.currentTarget.style.display = 'none'}
-                        />
-                      </div>
-                    )}
-                    
-                    {triageBookmark.content?.description && (
-                      <div>
-                        <h4 className="font-semibold text-base mb-3">Description</h4>
-                        <p className="text-sm leading-relaxed text-base-content/90">{triageBookmark.content.description}</p>
-                      </div>
-                    )}
-
-                    {triageBookmark.content?.text && (
-                      <div>
-                        <h4 className="font-semibold text-base mb-3">Content</h4>
-                        <div className="prose prose-sm max-w-none">
-                          <p className="whitespace-pre-wrap text-sm leading-relaxed text-base-content/90">{triageBookmark.content.text}</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Sidebar */}
-                  <div className="lg:col-span-2 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Left Column - Metadata */}
+                  <div className="space-y-6">
                     {/* Current Tags */}
                     <div>
                       <h4 className="font-semibold text-base mb-3">Tags</h4>
@@ -425,11 +668,13 @@ export const BookmarkList: React.FC = () => {
                         )}
                       </div>
                     </div>
+                  </div>
 
-                    {/* Quick Actions */}
+                  {/* Right Column - Quick Actions */}
+                  <div className="space-y-6">
                     <div>
                       <h4 className="font-semibold text-base mb-3">Quick Actions</h4>
-                      <div className="flex flex-col gap-2">
+                      <div className="flex flex-col gap-2 max-w-32">
                         <button className="btn btn-outline btn-sm">Add Tags</button>
                         <button className="btn btn-outline btn-sm">Add to List</button>
                         <button className="btn btn-outline btn-sm">Archive</button>
@@ -445,19 +690,18 @@ export const BookmarkList: React.FC = () => {
                 </div>
               </div>
 
-              {/* Footer */}
-              <div className="modal-action px-6 pb-6 pt-0">
-                <form method="dialog">
-                  <button className="btn">Close</button>
-                </form>
-              </div>
-            </>
-          )}
+            {/* Footer */}
+            <div className="px-6 pb-6 pt-0 flex justify-end">
+              <button 
+                onClick={() => setTriageBookmark(null)}
+                className="btn"
+              >
+                Close
+              </button>
+            </div>
+          </div>
         </div>
-        <div className="modal-backdrop backdrop-blur-md">
-          <button onClick={() => modalRef.current?.close()}>close</button>
-        </div>
-      </dialog>
+      )}
     </div>
   );
 };

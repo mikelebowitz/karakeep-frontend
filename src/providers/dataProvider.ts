@@ -136,7 +136,7 @@ export const karakeepDataProvider = (apiUrl: string): DataProvider => {
 async function getBookmarksList({ 
   current, 
   pageSize, 
-  filters: _filters, 
+  filters, 
   sorters: _sorters, 
   meta: _meta 
 }: {
@@ -146,7 +146,10 @@ async function getBookmarksList({
   sorters?: CrudSorting;
   meta?: any;
 }) {
-  // Use official API endpoint as documented
+  // Check if we have a search query in filters
+  const searchFilter = filters?.find(filter => filter.field === "q");
+  const isSearch = searchFilter && searchFilter.value;
+  
   // Get cursor for current page
   const cursor = cursorStorage.bookmarks.get(current);
   
@@ -160,8 +163,43 @@ async function getBookmarksList({
     params.cursor = cursor;
   }
 
+  // If search query, add it and use search endpoint
+  if (isSearch) {
+    params.q = searchFilter.value;
+  }
+  
+  // Handle tag/list filtering - choose optimal endpoint
+  let endpoint = '/bookmarks';
+  let useSpecialEndpoint = false;
+  
+  // Check for tag filters
+  const tagFilter = filters?.find(filter => filter.field === "tagIds");
+  const listFilter = filters?.find(filter => filter.field === "listIds");
+  
+  // Single tag filter - use dedicated endpoint
+  if (tagFilter && tagFilter.value?.length === 1 && !listFilter && !isSearch) {
+    endpoint = `/tags/${tagFilter.value[0]}/bookmarks`;
+    useSpecialEndpoint = true;
+  }
+  // Single list filter - use dedicated endpoint
+  else if (listFilter && listFilter.value?.length === 1 && !tagFilter && !isSearch) {
+    endpoint = `/lists/${listFilter.value[0]}/bookmarks`;
+    useSpecialEndpoint = true;
+  }
+  // Search query takes precedence
+  else if (isSearch) {
+    endpoint = '/bookmarks/search';
+  }
+  
+  // For complex filters or search, we'll use client-side filtering after API call
+  const needsClientFiltering = !useSpecialEndpoint && (
+    (tagFilter && tagFilter.value?.length > 0) || 
+    (listFilter && listFilter.value?.length > 0) ||
+    filters?.some(f => f.field === "untagged" || f.field === "unlisted")
+  );
+
   try {
-    const { data } = await axiosInstance.get(`/bookmarks`, {
+    const { data } = await axiosInstance.get(endpoint, {
       params
     });
 
@@ -184,6 +222,49 @@ async function getBookmarksList({
     bookmarks = bookmarks.filter(bookmark => {
       return bookmark && typeof bookmark === 'object' && bookmark.id;
     });
+
+    // Apply client-side filtering if needed
+    if (needsClientFiltering) {
+      bookmarks = bookmarks.filter(bookmark => {
+        // Tag filtering (multiple tags)
+        if (tagFilter && tagFilter.value?.length > 0) {
+          const bookmarkTags = bookmark.tags || [];
+          const hasAllTags = tagFilter.value.every(tagId => 
+            bookmarkTags.some(tag => 
+              (typeof tag === 'string' ? tag : tag.id) === tagId
+            )
+          );
+          if (!hasAllTags) return false;
+        }
+
+        // List filtering (multiple lists)
+        if (listFilter && listFilter.value?.length > 0) {
+          const bookmarkLists = bookmark.lists || [];
+          const hasAllLists = listFilter.value.every(listId => 
+            bookmarkLists.some(list => 
+              (typeof list === 'string' ? list : list.id) === listId
+            )
+          );
+          if (!hasAllLists) return false;
+        }
+
+        // Untagged filter
+        const untaggedFilter = filters?.find(f => f.field === "untagged");
+        if (untaggedFilter && untaggedFilter.value) {
+          const bookmarkTags = bookmark.tags || [];
+          if (bookmarkTags.length > 0) return false;
+        }
+
+        // Unlisted filter
+        const unlistedFilter = filters?.find(f => f.field === "unlisted");
+        if (unlistedFilter && unlistedFilter.value) {
+          const bookmarkLists = bookmark.lists || [];
+          if (bookmarkLists.length > 0) return false;
+        }
+
+        return true;
+      });
+    }
 
     const result = {
       data: bookmarks,
