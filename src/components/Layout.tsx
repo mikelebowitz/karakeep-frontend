@@ -1,6 +1,7 @@
-import { type ReactNode } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { useLogout, useGetIdentity } from "@refinedev/core";
 import type { User } from "../types";
+import { listMembershipGraph } from "../services/listMembershipGraph";
 
 interface LayoutProps {
   children: ReactNode;
@@ -9,8 +10,27 @@ interface LayoutProps {
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { mutate: logout } = useLogout();
   const { data: user } = useGetIdentity<User>();
+  const [isGraphInitializing, setIsGraphInitializing] = useState(!listMembershipGraph.isReady());
+
+  // Initialize list membership graph after authentication
+  useEffect(() => {
+    if (!listMembershipGraph.isReady()) {
+      setIsGraphInitializing(true);
+      listMembershipGraph.initialize()
+        .then(() => {
+          console.log("📊 List membership graph ready!");
+          setIsGraphInitializing(false);
+        })
+        .catch((error) => {
+          console.error("❌ Failed to initialize list membership graph:", error);
+          setIsGraphInitializing(false);
+        });
+    }
+  }, []);
 
   const handleLogout = () => {
+    // Reset graph on logout
+    listMembershipGraph.reset();
     logout();
   };
   return (
@@ -59,7 +79,16 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         
         {/* Page content */}
         <main className="flex-1 p-4">
-          {children}
+          {isGraphInitializing ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="text-center">
+                <div className="loading loading-spinner loading-lg mb-4"></div>
+                <p className="text-base-content/70">Initializing list membership data...</p>
+              </div>
+            </div>
+          ) : (
+            children
+          )}
         </main>
       </div>
       

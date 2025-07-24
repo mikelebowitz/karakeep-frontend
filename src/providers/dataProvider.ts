@@ -1,5 +1,6 @@
 import type { DataProvider, CrudFilters, CrudSorting } from "@refinedev/core";
 import axiosInstance from "../lib/axios";
+import { apiConfig } from "../config/api.config";
 
 // Cursor storage for pagination
 const cursorStorage = {
@@ -31,8 +32,25 @@ export const karakeepDataProvider = (apiUrl: string): DataProvider => {
     // Get single resource
     getOne: async ({ resource, id, meta: _meta }) => {
       if (resource === "bookmarks") {
-        const { data } = await axiosInstance.get(`/bookmarks/${id}`);
-        return { data };
+        const requestParams = {
+          includeContent: true,
+          include: 'lists,tags',
+          includeLists: true,
+          includeTags: true,
+        };
+        
+        const { data } = await axiosInstance.get(`/bookmarks/${id}`, {
+          params: requestParams
+        });
+        
+        // Normalize bookmark data to ensure lists and tags are arrays
+        const normalizedData = {
+          ...data,
+          lists: Array.isArray(data.lists) ? data.lists : [],
+          tags: Array.isArray(data.tags) ? data.tags : []
+        };
+        
+        return { data: normalizedData };
       } else if (resource === "tags") {
         const { data } = await axiosInstance.get(`/tags/${id}`);
         return { data };
@@ -47,9 +65,22 @@ export const karakeepDataProvider = (apiUrl: string): DataProvider => {
     // Get multiple resources by IDs
     getMany: async ({ resource, ids, meta: _meta }) => {
       if (resource === "bookmarks") {
-        const promises = ids.map(id => axiosInstance.get(`/bookmarks/${id}`));
+        const promises = ids.map(id => axiosInstance.get(`/bookmarks/${id}`, {
+          params: {
+            includeContent: true,
+            include: 'lists,tags',
+            includeLists: true,
+            includeTags: true,
+          }
+        }));
         const responses = await Promise.all(promises);
-        return { data: responses.map(r => r.data) };
+        // Normalize bookmark data to ensure lists and tags are arrays
+        const normalizedData = responses.map(r => ({
+          ...r.data,
+          lists: Array.isArray(r.data.lists) ? r.data.lists : [],
+          tags: Array.isArray(r.data.tags) ? r.data.tags : []
+        }));
+        return { data: normalizedData };
       } else if (resource === "tags") {
         const promises = ids.map(id => axiosInstance.get(`/tags/${id}`));
         const responses = await Promise.all(promises);
@@ -157,6 +188,10 @@ async function getBookmarksList({
   const params: any = {
     limit: pageSize,
     includeContent: true,
+    // Add relationship data - try common API patterns
+    include: 'lists,tags',
+    includeLists: true,
+    includeTags: true,
   };
   
   if (cursor) {
@@ -195,7 +230,7 @@ async function getBookmarksList({
   const needsClientFiltering = !useSpecialEndpoint && (
     (tagFilter && 'value' in tagFilter && tagFilter.value?.length > 0) || 
     (listFilter && 'value' in listFilter && listFilter.value?.length > 0) ||
-    filters?.some(f => 'field' in f && (f.field === "untagged" || f.field === "unlisted"))
+    filters?.some(f => 'field' in f && f.field === "untagged")
   );
 
   try {
@@ -221,6 +256,13 @@ async function getBookmarksList({
     // Ensure each bookmark has required properties and filter out invalid ones
     bookmarks = bookmarks.filter((bookmark: any) => {
       return bookmark && typeof bookmark === 'object' && bookmark.id;
+    }).map((bookmark: any) => {
+      // Ensure lists and tags are always arrays (fix for API not returning relationship data)
+      return {
+        ...bookmark,
+        lists: Array.isArray(bookmark.lists) ? bookmark.lists : [],
+        tags: Array.isArray(bookmark.tags) ? bookmark.tags : []
+      };
     });
 
     // Apply client-side filtering if needed
@@ -255,12 +297,7 @@ async function getBookmarksList({
           if (bookmarkTags.length > 0) return false;
         }
 
-        // Unlisted filter
-        const unlistedFilter = filters?.find(f => 'field' in f && f.field === "unlisted");
-        if (unlistedFilter && 'value' in unlistedFilter && unlistedFilter.value) {
-          const bookmarkLists = bookmark.lists || [];
-          if (bookmarkLists.length > 0) return false;
-        }
+        // Note: "unlisted" filter removed - now handled via Inbox list filtering
 
         return true;
       });
@@ -344,10 +381,25 @@ export const attachTagsToBookmark = async (bookmarkId: string, tagIds: string[])
   });
 };
 
+// Legacy function - no longer needed since we have the correct API endpoint
+// Kept for reference but should not be used
+export const testAlternativeListAssignment = async (bookmarkId: string, listId: string) => {
+  console.warn("⚠️ testAlternativeListAssignment is deprecated - use attachBookmarkToLists with correct PUT endpoint");
+  return null;
+};
+
 export const attachBookmarkToLists = async (bookmarkId: string, listIds: string[]) => {
-  const promises = listIds.map(listId =>
-    axiosInstance.put(`/lists/${listId}/bookmarks/${bookmarkId}`)
-  );
+  // Use the documented PUT /lists/{listId}/bookmarks/{bookmarkId} endpoint
+  const promises = listIds.map(async (listId) => {
+    try {
+      const response = await axiosInstance.put(`/lists/${listId}/bookmarks/${bookmarkId}`);
+      return response;
+    } catch (error: any) {
+      console.error(`Error assigning bookmark ${bookmarkId} to list ${listId}:`, error.response?.status, error.response?.data || error.message);
+      throw error;
+    }
+  });
+  
   return Promise.all(promises);
 };
 

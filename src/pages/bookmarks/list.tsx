@@ -1,8 +1,13 @@
-import { useList } from "@refinedev/core";
+import { useList, useInvalidate, useOne } from "@refinedev/core";
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { TagPickerModal } from "../../components/TagPickerModal";
 import { ListPickerModal } from "../../components/ListPickerModal";
-import { attachBookmarkToLists } from "../../providers/dataProvider";
+import { attachBookmarkToLists, karakeepDataProvider } from "../../providers/dataProvider";
+import { apiConfig } from "../../config/api.config";
+import { listMembershipGraph } from "../../services/listMembershipGraph";
+
+// Constants
+const INBOX_LIST_ID = "qukdzoowmmsnr8hb19b0z1xc";
 
 interface FilterState {
   search: string;
@@ -77,7 +82,8 @@ export const BookmarkList: React.FC = () => {
   }
   
   if (filters.showUnlisted) {
-    apiFilters.push({ field: "unlisted", operator: "eq" as const, value: true });
+    // "No Lists" filter now shows Inbox list contents
+    apiFilters.push({ field: "listIds", operator: "in" as const, value: [INBOX_LIST_ID] });
   }
   
   const { data, isLoading, error, refetch } = useList({
@@ -88,6 +94,9 @@ export const BookmarkList: React.FC = () => {
     },
     filters: apiFilters.length > 0 ? apiFilters : undefined,
   });
+
+  // Hook for cache invalidation
+  const invalidate = useInvalidate();
 
   // Fetch available lists for triage modal
   const { data: listsData } = useList({
@@ -101,10 +110,26 @@ export const BookmarkList: React.FC = () => {
     pagination: { pageSize: 100 }
   });
 
+  // State declarations (must be before hooks that use them)
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [focusedRowIndex, setFocusedRowIndex] = useState<number>(-1);
   const [triageBookmark, setTriageBookmark] = useState<any>(null);
+  const [triageBookmarkId, setTriageBookmarkId] = useState<string | null>(null);
   const [queueIndex, setQueueIndex] = useState<number>(-1);
+
+  // Fetch individual triage bookmark data for reliable state management
+  const { 
+    data: triageBookmarkData, 
+    refetch: refetchTriageBookmark,
+    isLoading: isTriageBookmarkLoading,
+    error: triageBookmarkError 
+  } = useOne({
+    resource: "bookmarks",
+    id: triageBookmarkId || "",
+    queryOptions: {
+      enabled: !!triageBookmarkId, // Only fetch when we have an ID
+    },
+  });
   const tableRef = useRef<HTMLTableElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -113,6 +138,9 @@ export const BookmarkList: React.FC = () => {
     setFocusedRowIndex(-1);
     setSelectedIds([]);
     setQueueIndex(-1);
+    // Close triage modal if open when changing pages
+    setTriageBookmark(null);
+    setTriageBookmarkId(null);
   }, [currentPage]);
 
   const handleSelectAll = (checked: boolean) => {
@@ -142,6 +170,25 @@ export const BookmarkList: React.FC = () => {
   // Available data for lookups (moved up to be available for other hooks)
   const availableLists = useMemo(() => listsData?.data || [], [listsData]);
   const availableTags = useMemo(() => tagsData?.data || [], [tagsData]);
+  
+  // Helper function to get effective lists using graph service
+  const getEffectiveLists = useCallback((bookmark: any) => {
+    if (!bookmark || !listMembershipGraph.isReady()) return [];
+    
+    // Get list membership from graph service (instant O(1) lookup)
+    const listIds = listMembershipGraph.getListsForBookmark(bookmark.id);
+    
+    // Filter out Inbox list from triage view display
+    const filteredListIds = listIds.filter(listId => listId !== INBOX_LIST_ID);
+    
+    // Map list IDs to list objects for display
+    const listObjects = filteredListIds.map(listId => {
+      const listObj = availableLists.find(l => String(l.id) === listId);
+      return listObj ? listObj.name : listId;
+    });
+    
+    return listObjects;
+  }, [availableLists]);
   
   // Filter available lists based on search text (moved up to be available for assignBookmarkToList)
   const filteredLists = useMemo(() => 
@@ -175,11 +222,9 @@ export const BookmarkList: React.FC = () => {
     // Get selected list info
     const selectedList = availableLists.find(l => l.id === listId);
     
-    // Check if bookmark is already in this list
-    const isAlreadyInList = triageBookmark.lists?.some((list: any) => {
-      const id = typeof list === 'string' ? list : list.id;
-      return id === listId;
-    });
+    // Check if bookmark is already in this list using graph service
+    const currentListIds = listMembershipGraph.getListsForBookmark(triageBookmark.id);
+    const isAlreadyInList = currentListIds.includes(listId);
     
     if (isAlreadyInList) {
       console.log("Bookmark is already in this list");
@@ -189,58 +234,50 @@ export const BookmarkList: React.FC = () => {
       return;
     }
     
-    // Enhanced debugging
-    console.log("=== LIST ASSIGNMENT DEBUG ===");
-    console.log("Available lists count:", availableLists.length);
-    console.log("List filter text:", listFilterText);
-    console.log("Filtered lists:", filteredLists.map(l => ({ id: l.id, name: l.name })));
-    console.log("Highlighted list index:", highlightedListIndex);
-    console.log("Selected list ID:", listId);
-    console.log("Selected list object:", selectedList);
-    console.log("Assigning bookmark", triageBookmark.id, "to list", selectedList?.name || 'UNKNOWN');
+    // Log assignment attempt
+    console.log(`Assigning bookmark ${triageBookmark.id} to list "${selectedList?.name || 'UNKNOWN'}" (ID: ${listId})`);
     
     try {
-      const result = await attachBookmarkToLists(triageBookmark.id, [listId]);
-      console.log("Assignment result:", result);
-      
-      // Update the bookmark's lists in the local state
-      setTriageBookmark((prev: any) => ({
-        ...prev,
-        lists: [...(prev.lists || []), { id: listId, name: selectedList?.name || '' }]
-      }));
-      
-      // Note: We can't directly update the data array as it comes from useList hook
-      // The refetch() call below will get the updated data from the server
-      
-      // Refetch bookmarks to update the list view
-      refetch();
-      console.log("Successfully assigned bookmark to list");
+      // Use graph service to handle both API call and local state update
+      await listMembershipGraph.addBookmarkToList(triageBookmark.id, listId);
       
       // Show success feedback
-      setAssignmentFeedback({ type: 'success', message: `Added to ${selectedList?.name || 'list'}` });
+      setAssignmentFeedback({ 
+        type: 'success', 
+        message: `Added to ${selectedList?.name || 'list'}` 
+      });
+      
+      // Clear feedback after 2 seconds
       setTimeout(() => setAssignmentFeedback(null), 2000);
+      
+      // Invalidate cache for consistency
+      await invalidate({
+        resource: "bookmarks",
+        invalidates: ["list"]
+      });
     } catch (error: any) {
-      console.error("Failed to assign bookmark to list:", error);
-      console.error("Error details:", error);
+      console.error("List assignment failed:", error);
       
       // Check for specific error codes
       if (error.response?.status === 400) {
-        console.log("Bookmark is already in this list (API response)");
         setAssignmentFeedback({ type: 'info', message: `Already in ${selectedList?.name || 'this list'}` });
       } else if (error.response?.status === 404) {
-        console.log("List or bookmark not found");
         setAssignmentFeedback({ type: 'error', message: 'List or bookmark not found' });
       } else {
-        setAssignmentFeedback({ type: 'error', message: 'Failed to add to list' });
+        setAssignmentFeedback({ type: 'error', message: `Failed to add to ${selectedList?.name || 'list'}` });
       }
+      
       setTimeout(() => setAssignmentFeedback(null), 3000);
     }
-  }, [triageBookmark, availableLists, listFilterText, filteredLists, highlightedListIndex, refetch]);
+  }, [triageBookmark, availableLists, invalidate]);
 
   // Queue navigation functions
   const openTriageForIndex = useCallback((index: number) => {
     if (data?.data && index >= 0 && index < data.data.length) {
-      setTriageBookmark(data.data[index]);
+      const bookmark = data.data[index];
+      // Only set the ID to trigger fresh data fetch - don't set triageBookmark yet
+      // This prevents the flickering by avoiding duplicate state updates
+      setTriageBookmarkId(bookmark.id);
       setQueueIndex(index);
       // Reset triage modal state
       setListFilterText("");
@@ -248,10 +285,15 @@ export const BookmarkList: React.FC = () => {
     }
   }, [data]);
 
+
   const navigateToNextInQueue = useCallback(() => {
     if (data?.data && queueIndex < data.data.length - 1) {
       const nextIndex = queueIndex + 1;
-      setTriageBookmark(data.data[nextIndex]);
+      const nextBookmark = data.data[nextIndex];
+      
+      // Only set the ID to trigger fresh data fetch - don't set triageBookmark yet
+      // This prevents the flickering by avoiding duplicate state updates
+      setTriageBookmarkId(nextBookmark.id);
       setQueueIndex(nextIndex);
       // Reset triage modal state
       setListFilterText("");
@@ -262,7 +304,11 @@ export const BookmarkList: React.FC = () => {
   const navigateToPrevInQueue = useCallback(() => {
     if (data?.data && queueIndex > 0) {
       const prevIndex = queueIndex - 1;
-      setTriageBookmark(data.data[prevIndex]);
+      const prevBookmark = data.data[prevIndex];
+      
+      // Only set the ID to trigger fresh data fetch - don't set triageBookmark yet  
+      // This prevents the flickering by avoiding duplicate state updates
+      setTriageBookmarkId(prevBookmark.id);
       setQueueIndex(prevIndex);
       // Reset triage modal state
       setListFilterText("");
@@ -277,15 +323,44 @@ export const BookmarkList: React.FC = () => {
     }
   }, [filteredLists.length, highlightedListIndex]);
 
-  // Update triage bookmark when data changes (after refetch)
+  // Scroll highlighted list item into view
   useEffect(() => {
-    if (triageBookmark && data?.data && queueIndex >= 0) {
-      const updatedBookmark = data.data.find((b: any) => b.id === triageBookmark.id);
-      if (updatedBookmark) {
-        setTriageBookmark(updatedBookmark);
-      }
+    if (highlightedListIndex >= 0 && filteredLists.length > 0 && triageBookmark) {
+      const element = document.querySelector(`[data-list-index="${highlightedListIndex}"]`);
+      element?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
-  }, [data, triageBookmark, queueIndex]);
+  }, [highlightedListIndex, filteredLists.length, triageBookmark]);
+
+  // Update triage bookmark from individual bookmark fetch (reliable fresh data)
+  useEffect(() => {
+    if (!triageBookmarkId) {
+      // Always clear triage bookmark immediately when ID is cleared (e.g., by ESC key)
+      setTriageBookmark(null);
+    } else if (triageBookmarkData?.data) {
+      setTriageBookmark(triageBookmarkData.data);
+    } else if (triageBookmarkError && triageBookmarkId) {
+      // Handle error case - bookmark might have been deleted or become inaccessible
+      console.error("Failed to fetch triage bookmark:", triageBookmarkError);
+      setAssignmentFeedback({ 
+        type: 'error', 
+        message: 'Failed to load bookmark data. It may have been deleted.' 
+      });
+      setTimeout(() => {
+        setAssignmentFeedback(null);
+        // Close triage modal on error
+        setTriageBookmark(null);
+        setTriageBookmarkId(null);
+      }, 3000);
+    } else if (triageBookmarkId && !triageBookmarkData && !isTriageBookmarkLoading) {
+      // Case where we have an ID but no data and not loading - this shouldn't happen
+      console.warn("⚠️ Triage bookmark fetch failed:", {
+        triageBookmarkId,
+        hasData: !!triageBookmarkData,
+        isLoading: isTriageBookmarkLoading,
+        hasError: !!triageBookmarkError
+      });
+    }
+  }, [triageBookmarkData, triageBookmarkError, triageBookmarkId, isTriageBookmarkLoading]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -320,10 +395,10 @@ export const BookmarkList: React.FC = () => {
         }
       }
 
-      // Check if user is typing in an input field
+      // Check if user is typing in an input field (but allow keyboard nav after clicking checkboxes)
       const activeElement = document.activeElement;
       if (
-        activeElement?.tagName === 'INPUT' ||
+        (activeElement?.tagName === 'INPUT' && (activeElement as HTMLInputElement).type !== 'checkbox') ||
         activeElement?.tagName === 'TEXTAREA' ||
         (activeElement as HTMLElement)?.contentEditable === 'true'
       ) {
@@ -339,9 +414,11 @@ export const BookmarkList: React.FC = () => {
       // Handle ESC key (must be before modal blocking check)
       if (e.key === 'Escape') {
         e.preventDefault();
-        // Close modal if open (priority)
-        if (triageBookmark) {
+        // Close modal if open (priority) - check both triageBookmark and triageBookmarkId
+        if (triageBookmark || triageBookmarkId) {
+          // Use React's automatic batching to update all state synchronously
           setTriageBookmark(null);
+          setTriageBookmarkId(null);
           setQueueIndex(-1);
           setListFilterText("");
           setHighlightedListIndex(0);
@@ -361,19 +438,15 @@ export const BookmarkList: React.FC = () => {
         switch (e.key) {
           case "ArrowUp":
             e.preventDefault();
-            setHighlightedListIndex(prev => {
-              const newIndex = prev > 0 ? prev - 1 : Math.max(0, filteredLists.length - 1);
-              console.log("Arrow Up: index", prev, "->", newIndex, "list:", filteredLists[newIndex]?.name);
-              return newIndex;
-            });
+            setHighlightedListIndex(prev => 
+              prev > 0 ? prev - 1 : Math.max(0, filteredLists.length - 1)
+            );
             break;
           case "ArrowDown":
             e.preventDefault();
-            setHighlightedListIndex(prev => {
-              const newIndex = prev < filteredLists.length - 1 ? prev + 1 : 0;
-              console.log("Arrow Down: index", prev, "->", newIndex, "list:", filteredLists[newIndex]?.name);
-              return newIndex;
-            });
+            setHighlightedListIndex(prev => 
+              prev < filteredLists.length - 1 ? prev + 1 : 0
+            );
             break;
           case "ArrowLeft":
             e.preventDefault();
@@ -385,22 +458,15 @@ export const BookmarkList: React.FC = () => {
             break;
           case "Enter":
             e.preventDefault();
-            console.log("=== ENTER KEY DEBUG ===");
-            console.log("Current filteredLists:", filteredLists.map(l => ({ id: l.id, name: l.name })));
-            console.log("Current highlightedListIndex:", highlightedListIndex);
-            console.log("Selected list:", filteredLists[highlightedListIndex]);
-            
             if (e.metaKey || e.ctrlKey) {
               // Cmd+Return: assign and advance
               if (filteredLists[highlightedListIndex]) {
-                console.log("Cmd+Enter: Assigning to list and advancing");
                 assignBookmarkToList(String(filteredLists[highlightedListIndex].id));
                 navigateToNextInQueue();
               }
             } else {
               // Regular Return: assign to list
               if (filteredLists[highlightedListIndex]) {
-                console.log("Enter: Assigning to list");
                 assignBookmarkToList(String(filteredLists[highlightedListIndex].id));
                 setListFilterText("");
                 setHighlightedListIndex(0);
@@ -416,15 +482,8 @@ export const BookmarkList: React.FC = () => {
             // Handle typing to filter lists
             if (e.key.length === 1 && !e.metaKey && !e.ctrlKey && !e.altKey) {
               e.preventDefault();
-              const newFilterText = listFilterText + e.key;
-              console.log("Typing:", e.key, "New filter text:", newFilterText);
-              setListFilterText(prev => {
-                const updated = prev + e.key;
-                console.log("Filter text updated to:", updated);
-                return updated;
-              });
+              setListFilterText(prev => prev + e.key);
               setHighlightedListIndex(0); // Reset to first result
-              console.log("Highlighted index reset to 0");
             }
             break;
         }
@@ -466,6 +525,24 @@ export const BookmarkList: React.FC = () => {
           e.preventDefault();
           if (focusedRowIndex >= 0 && focusedRowIndex <= maxIndex) {
             openTriageForIndex(focusedRowIndex);
+          }
+          break;
+        case "t":
+        case "T":
+          e.preventDefault();
+          if (selectedIds.length > 0) {
+            // Open triage for first selected bookmark
+            const firstSelectedId = selectedIds[0];
+            const selectedIndex = bookmarks.findIndex((b: any) => b.id === firstSelectedId);
+            if (selectedIndex >= 0) {
+              openTriageForIndex(selectedIndex);
+            }
+          } else if (focusedRowIndex >= 0 && focusedRowIndex <= maxIndex) {
+            // Open triage for focused bookmark
+            openTriageForIndex(focusedRowIndex);
+          } else {
+            // No selection or focus, open triage for first bookmark
+            openTriageForIndex(0);
           }
           break;
       }
@@ -838,7 +915,10 @@ export const BookmarkList: React.FC = () => {
       {/* Triage Modal */}
       {triageBookmark && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-black/50" onClick={() => setTriageBookmark(null)}></div>
+          <div className="fixed inset-0 bg-black/50" onClick={() => {
+            setTriageBookmark(null);
+            setTriageBookmarkId(null); // Clear ID to stop fetching
+          }}></div>
           <div className="relative bg-base-100 rounded-lg max-w-3xl max-h-[90vh] overflow-y-auto p-0 w-full shadow-2xl">
             {/* Header */}
             <div className="p-6 pb-4 border-b border-base-300">
@@ -885,23 +965,35 @@ export const BookmarkList: React.FC = () => {
             </div>
 
             {/* Content */}
-            <div className="p-6 space-y-6">
+            <div className="p-6 space-y-6 relative">
+              {/* Loading overlay when refetching bookmark data */}
+              {isTriageBookmarkLoading && (
+                <div className="absolute inset-0 bg-base-100/80 flex items-center justify-center z-10 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <span className="loading loading-spinner loading-sm"></span>
+                    <span className="text-sm">Updating bookmark data...</span>
+                  </div>
+                </div>
+              )}
               {/* Current Lists */}
               <div>
                 <h4 className="font-semibold text-base mb-3">Currently in Lists:</h4>
                 <div className="flex flex-wrap gap-2">
-                  {triageBookmark.lists && triageBookmark.lists.length > 0 ? (
-                    triageBookmark.lists.map((list: any, index: number) => (
-                      <span 
-                        key={index} 
-                        className="badge badge-primary"
-                      >
-                        {typeof list === 'string' ? list : list.name || list.id}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-sm text-base-content/50">Not in any lists</span>
-                  )}
+                  {(() => {
+                    const effectiveLists = getEffectiveLists(triageBookmark);
+                    return effectiveLists.length > 0 ? (
+                      effectiveLists.map((listName: string, index: number) => (
+                        <span 
+                          key={index} 
+                          className="badge badge-primary"
+                        >
+                          {listName}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-sm text-base-content/50">Not in any lists</span>
+                    );
+                  })()}
                 </div>
               </div>
 
@@ -909,23 +1001,48 @@ export const BookmarkList: React.FC = () => {
               <div>
                 <h4 className="font-semibold text-base mb-3">Add to List:</h4>
                 
-                {/* Assignment Feedback */}
+                {/* Assignment Feedback - Fixed overlay alert */}
                 {assignmentFeedback && (
-                  <div className={`mb-3 p-2 rounded text-sm ${
-                    assignmentFeedback.type === 'success' ? 'bg-success/20 text-success' :
-                    assignmentFeedback.type === 'error' ? 'bg-error/20 text-error' :
-                    'bg-info/20 text-info'
-                  }`}>
-                    {assignmentFeedback.message}
+                  <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 max-w-md">
+                    <div className={`alert shadow-lg ${
+                      assignmentFeedback.type === 'success' ? 'alert-success' :
+                      assignmentFeedback.type === 'error' ? 'alert-error' :
+                      'alert-info'
+                    }`}>
+                      <svg 
+                        xmlns="http://www.w3.org/2000/svg" 
+                        className="stroke-current shrink-0 h-6 w-6" 
+                        fill="none" 
+                        viewBox="0 0 24 24"
+                      >
+                        {assignmentFeedback.type === 'success' ? (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        ) : assignmentFeedback.type === 'error' ? (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        ) : (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        )}
+                      </svg>
+                      <span>{assignmentFeedback.message}</span>
+                    </div>
                   </div>
                 )}
                 
                 {/* Filter Display */}
                 <div className="mb-4">
-                  <div className="text-lg font-mono bg-base-200 rounded px-3 py-2 min-h-[2.5rem] flex items-center">
-                    {listFilterText || <span className="text-base-content/40">Start typing to filter lists...</span>}
-                    <span className="animate-pulse">|</span>
-                  </div>
+                  {listFilterText ? (
+                    <div className="text-lg px-3 py-2 min-h-[2.5rem] flex items-center bg-base-200 rounded">
+                      {listFilterText}
+                      <span className="animate-pulse">|</span>
+                    </div>
+                  ) : (
+                    <div role="alert" className="alert alert-info">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      </svg>
+                      <span>Start typing to filter lists...</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Available Lists */}
@@ -938,6 +1055,7 @@ export const BookmarkList: React.FC = () => {
                     filteredLists.map((list, index) => (
                       <div
                         key={list.id}
+                        data-list-index={index}
                         className={`p-3 rounded-lg flex items-center gap-3 ${
                           index === highlightedListIndex 
                             ? 'bg-primary text-primary-content' 
