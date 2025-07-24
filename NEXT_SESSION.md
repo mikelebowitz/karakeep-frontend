@@ -1,6 +1,6 @@
 # Next Session Brief
 
-**Generated**: 2025-07-24 08:04
+**Generated**: 2025-07-24 08:17
 
 ## Quick Context
 
@@ -26,7 +26,7 @@ Check `docs/sessions/` for the latest session summary.
  M src/providers/dataProvider.ts
 ?? BACKEND_ISSUE_TRIAGE_LISTS.md
 ?? docs/TRIAGE_LIST_ASSIGNMENT_DEBUG.md
-?? docs/sessions/SESSION_2025-07-24_08-04.md
+?? docs/sessions/SESSION_2025-07-24_08-17.md
 ?? src/services/
 
 ```
