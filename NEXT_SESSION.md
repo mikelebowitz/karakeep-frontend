@@ -1,11 +1,11 @@
 # Next Session Brief
 
-**Generated**: 2025-07-23 23:47
+**Generated**: 2025-07-24 00:09
 
 ## Quick Context
 
 **Branch**: feature/advanced-search-filtering
-**Last Activity**: July 23, 2025
+**Last Activity**: July 24, 2025
 
 ## Resume Command
 
@@ -24,7 +24,7 @@ Check `docs/sessions/` for the latest session summary.
  M src/pages/bookmarks/list.tsx
  M src/providers/dataProvider.ts
 ?? docs/TRIAGE_LIST_ASSIGNMENT_DEBUG.md
-?? docs/sessions/SESSION_2025-07-23_23-47.md
+?? docs/sessions/SESSION_2025-07-24_00-09.md
 
 ```
 
