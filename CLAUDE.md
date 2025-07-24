@@ -111,7 +111,7 @@ npm run preview      # Preview production build
 
 ## Current Development Status
 
-### ✅ Completed (Migration + Core Features):
+### ✅ Completed (Migration + Core Features + Bulk Operations):
 - **Complete Refine Migration**: Vite + Refine + DaisyUI with 50% bundle reduction
 - **Authentication System**: JWT with API token support and automatic refresh
 - **Advanced Search & Filtering**: Debounced search, tag/list filters, special filters
@@ -121,17 +121,23 @@ npm run preview      # Preview production build
 - **Claude Code Hooks**: Automated documentation and GitOps workflows
 - **Layout System**: Responsive drawer layout with navigation
 - **TypeScript**: Full type safety with strict mode compliance
-
-### 🚧 In Progress:
-- **Tag/List Picker Modals**: Implement filter dropdown functionality with + Add buttons
-- **Bulk Operations**: Wire up T/L/A/Delete keys to actual API operations
-- **Available Tags/Lists Loading**: Fetch options for filter dropdowns
+- **🆕 Complete Bulk Operations System**: 
+  - T/L/A/Delete keyboard shortcuts for tags/lists/archive/delete
+  - BulkTagModal and BulkListModal with search functionality
+  - Progress tracking and comprehensive error handling
+  - Support for both visible selection and cross-page operations
+  - Toast button integration with loading states
+- **🆕 DaisyUI Theme Switcher**: 
+  - Hidden theme switcher with \ (backslash) key activation
+  - All 35+ DaisyUI themes available (light, dark, synthwave, etc.)
+  - Theme persistence to localStorage with visual feedback
+  - Professional theme management service with TypeScript safety
 
 ### 📋 Next Priorities:
-1. **Complete Bulk Operations**: Implement actual tag/list assignment via keyboard
-2. **Triage Mode**: Card-based bookmark processing interface
-3. **URL Persistence**: Save filter state in URL for bookmarkable searches
-4. **Performance Optimizations**: Add caching for tags/lists data
+1. **Triage Mode**: Card-based bookmark processing interface
+2. **URL Persistence**: Save filter state in URL for bookmarkable searches
+3. **Performance Optimizations**: Add caching for tags/lists data
+4. **Archive Implementation**: Define and implement proper archive functionality
 
 ## Documentation Structure
 

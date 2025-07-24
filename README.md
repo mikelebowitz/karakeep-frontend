@@ -140,6 +140,8 @@ Complete keyboard control for power users:
 - Arrow keys for table navigation with auto-scroll
 - `Space` to toggle selection
 - `Enter` to open triage modal
+- **🆕 Bulk Operations**: `T` (tags) | `L` (lists) | `A` (archive) | `Delete` (remove)
+- **🆕 Theme Switcher**: `\` (backslash) to cycle through 35+ DaisyUI themes
 
 ## 📋 Current Status
 
@@ -168,10 +170,12 @@ This project was successfully migrated from React-Admin to Refine for better per
 - TypeScript strict mode compliance
 - **GitOps automation** with Claude Code hooks
 
-### 🚧 In Progress
-- **Bulk Operations Implementation**: Wire up T/L/A/Delete keys to actual API calls
-- **Tag/List Picker Modals**: Implement filter dropdown functionality
-- **Available Tags/Lists Loading**: Fetch options for filter dropdowns
+### ✅ Latest Additions
+- **🆕 Complete Bulk Operations**: T/L/A/Delete keyboard shortcuts with progress tracking
+- **🆕 DaisyUI Theme Switcher**: Hidden theme switcher (\\ key) with 35+ themes
+- **Professional Modals**: BulkTagModal and BulkListModal with search functionality
+- **Cross-Page Operations**: Support for "select all matching" across multiple pages
+- **Theme Persistence**: localStorage integration with visual feedback
 
 ### 📅 Planned
 - Triage mode for bookmark processing
