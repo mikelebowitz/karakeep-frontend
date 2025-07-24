@@ -1,6 +1,6 @@
 # Next Session Brief
 
-**Generated**: 2025-07-24 08:34
+**Generated**: 2025-07-24 12:01
 
 ## Quick Context
 
@@ -21,10 +21,7 @@ Check `docs/sessions/` for the latest session summary.
 ## Git Status Summary
 
 ```
- M CLAUDE.md
- M README.md
- M src/pages/bookmarks/list.tsx
-?? docs/sessions/SESSION_2025-07-24_08-34.md
+?? docs/sessions/SESSION_2025-07-24_12-01.md
 
 ```
 
