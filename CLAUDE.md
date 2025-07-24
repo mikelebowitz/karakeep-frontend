@@ -116,7 +116,7 @@ npm run preview      # Preview production build
 - **Authentication System**: JWT with API token support and automatic refresh
 - **Advanced Search & Filtering**: Debounced search, tag/list filters, special filters
 - **Two-Tier Bulk Selection**: Visible vs all matching results with Cmd+Shift+A
-- **Professional Keyboard Navigation**: Complete keyboard control with global shortcuts
+- **Comprehensive Keyboard Navigation**: Complete keyboard control with global shortcuts and auto-scroll
 - **Smart Data Provider**: Optimal endpoint selection with client-side filtering
 - **Claude Code Hooks**: Automated documentation and GitOps workflows
 - **Layout System**: Responsive drawer layout with navigation
@@ -157,7 +157,7 @@ npm run preview      # Preview production build
 ### Current Branch Status:
 - **Active Branch**: `feature/advanced-search-filtering`
 - **Main Branch**: `main` (for PRs)
-- **Latest Work**: Advanced search/filtering system with bulk operations
+- **Latest Work**: Advanced search/filtering system with comprehensive keyboard navigation and auto-scroll
 
 ## Development Workflow
 

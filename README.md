@@ -12,7 +12,7 @@ A modern, fast, and maintainable bookmark management frontend built with Refine 
 - **50% Smaller Bundle**: 210KB gzipped (vs 315KB from React-Admin)
 - **Advanced Search & Filtering**: Debounced search with tag/list filters and special filters (untagged/unlisted)
 - **Two-Tier Bulk Selection**: Select visible items or all matching results across pages
-- **Enterprise Keyboard Navigation**: Complete keyboard control (Cmd+K search, Cmd+Shift+A select all matching, ESC context-aware)
+- **Comprehensive Keyboard Navigation**: Complete keyboard control with auto-scroll (Cmd+K search, Cmd+Shift+A select all matching, ESC context-aware)
 - **Smart API Integration**: Optimized endpoint selection for performance
 - **Responsive Design**: Mobile-first approach with clean UI
 - **Type Safety**: Full TypeScript implementation
@@ -130,14 +130,14 @@ Enterprise-ready bulk operations with two selection modes:
 - **Visual Indicators**: Warning badges and tooltips for clarity
 - **Bulk Actions Toast**: Contextual actions with keyboard hints
 
-### Professional Keyboard Navigation
+### Comprehensive Keyboard Navigation
 Complete keyboard control for power users:
 - `Cmd+K` - Focus search instantly
 - `Cmd+A` - Select all visible items
 - `Cmd+Shift+A` - Select all matching results
 - `Cmd+D` - Deselect everything
 - `ESC` - Context-aware clearing (modal → selections → focus)
-- Arrow keys for table navigation
+- Arrow keys for table navigation with auto-scroll
 - `Space` to toggle selection
 - `Enter` to open triage modal
 
@@ -159,9 +159,9 @@ This project was successfully migrated from React-Admin to Refine for better per
   - Select visible items (Cmd+A)
   - Select all matching results (Cmd+Shift+A)
   - Context-aware bulk action toast
-- **Enterprise Keyboard Navigation**:
+- **Comprehensive Keyboard Navigation**:
   - Global shortcuts without focus requirements
-  - Arrow key table navigation
+  - Arrow key table navigation with auto-scroll
   - Space bar selection, Enter for triage
   - ESC for context-aware clearing
 - Responsive layout with drawer navigation
@@ -196,7 +196,7 @@ The Refine migration provides several key advantages:
 2. **Maintainability**: Clean codebase without CSS override battles
 3. **Flexibility**: True headless architecture with DaisyUI components
 4. **Developer Experience**: Modern hooks-based patterns with TypeScript
-5. **Enterprise Features**: Professional bulk operations and filtering
+5. **Comprehensive Features**: Professional bulk operations and filtering
 6. **Smart API Usage**: Intelligent endpoint selection reduces server load
 7. **Keyboard-First**: Complete keyboard navigation for power users
 8. **Type Safety**: Full TypeScript coverage with strict mode

@@ -2,8 +2,9 @@ import { useList, useInvalidate, useOne } from "@refinedev/core";
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { TagPickerModal } from "../../components/TagPickerModal";
 import { ListPickerModal } from "../../components/ListPickerModal";
-import { attachBookmarkToLists, karakeepDataProvider } from "../../providers/dataProvider";
-import { apiConfig } from "../../config/api.config";
+import { BulkTagModal } from "../../components/BulkTagModal";
+import { BulkListModal } from "../../components/BulkListModal";
+import { attachBookmarkToLists, attachTagsToBookmark, karakeepDataProvider } from "../../providers/dataProvider";
 import { listMembershipGraph } from "../../services/listMembershipGraph";
 
 // Constants
@@ -116,11 +117,16 @@ export const BookmarkList: React.FC = () => {
   const [triageBookmark, setTriageBookmark] = useState<any>(null);
   const [triageBookmarkId, setTriageBookmarkId] = useState<string | null>(null);
   const [queueIndex, setQueueIndex] = useState<number>(-1);
+  
+  // Bulk operations state
+  const [showTagModal, setShowTagModal] = useState(false);
+  const [showListModal, setShowListModal] = useState(false);
+  const [bulkOperationLoading, setBulkOperationLoading] = useState(false);
+  const [bulkOperationProgress, setBulkOperationProgress] = useState<{current: number, total: number} | null>(null);
 
   // Fetch individual triage bookmark data for reliable state management
   const { 
     data: triageBookmarkData, 
-    refetch: refetchTriageBookmark,
     isLoading: isTriageBookmarkLoading,
     error: triageBookmarkError 
   } = useOne({
@@ -277,7 +283,7 @@ export const BookmarkList: React.FC = () => {
       const bookmark = data.data[index];
       // Only set the ID to trigger fresh data fetch - don't set triageBookmark yet
       // This prevents the flickering by avoiding duplicate state updates
-      setTriageBookmarkId(bookmark.id);
+      setTriageBookmarkId(String(bookmark.id));
       setQueueIndex(index);
       // Reset triage modal state
       setListFilterText("");
@@ -293,7 +299,7 @@ export const BookmarkList: React.FC = () => {
       
       // Only set the ID to trigger fresh data fetch - don't set triageBookmark yet
       // This prevents the flickering by avoiding duplicate state updates
-      setTriageBookmarkId(nextBookmark.id);
+      setTriageBookmarkId(String(nextBookmark.id));
       setQueueIndex(nextIndex);
       // Reset triage modal state
       setListFilterText("");
@@ -308,7 +314,7 @@ export const BookmarkList: React.FC = () => {
       
       // Only set the ID to trigger fresh data fetch - don't set triageBookmark yet  
       // This prevents the flickering by avoiding duplicate state updates
-      setTriageBookmarkId(prevBookmark.id);
+      setTriageBookmarkId(String(prevBookmark.id));
       setQueueIndex(prevIndex);
       // Reset triage modal state
       setListFilterText("");
@@ -361,6 +367,240 @@ export const BookmarkList: React.FC = () => {
       });
     }
   }, [triageBookmarkData, triageBookmarkError, triageBookmarkId, isTriageBookmarkLoading]);
+
+  // Scroll focused row into view when focusedRowIndex changes
+  useEffect(() => {
+    if (focusedRowIndex >= 0 && tableRef.current) {
+      // Find the focused row element
+      const rows = tableRef.current.querySelectorAll('tbody tr');
+      const focusedRow = rows[focusedRowIndex];
+      
+      if (focusedRow) {
+        // Scroll the row into view with some padding
+        focusedRow.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest', // Only scroll if needed
+          inline: 'nearest'
+        });
+      }
+    }
+  }, [focusedRowIndex]);
+
+  // Function to get all matching bookmark IDs (for selectAllMatching scenario)
+  const getAllMatchingBookmarkIds = useCallback(async () => {
+    if (!selectAllMatching) {
+      return selectedIds;
+    }
+    
+    try {
+      // We need to fetch all pages to get all matching IDs
+      // This is a simplified approach - in production, you might want a dedicated API endpoint
+      let allIds: string[] = [];
+      let page = 1;
+      let hasMore = true;
+      
+      while (hasMore) {
+        const response = await karakeepDataProvider(import.meta.env.VITE_API_URL || "http://localhost:8000/api").getList({
+          resource: "bookmarks",
+          pagination: { current: page, pageSize: 100 },
+          filters: apiFilters.length > 0 ? apiFilters : undefined,
+        });
+        
+        const pageIds = response.data.map((bookmark: any) => bookmark.id);
+        allIds = [...allIds, ...pageIds];
+        
+        // Check if we have more data (simple heuristic)
+        hasMore = response.data.length === 100;
+        page++;
+        
+        // Safety check to prevent infinite loops
+        if (page > 50) break;
+      }
+      
+      return allIds;
+    } catch (error) {
+      console.error('Failed to fetch all matching bookmark IDs:', error);
+      throw error;
+    }
+  }, [selectedIds, selectAllMatching, apiFilters]);
+
+  // Bulk operation handlers
+  const handleBulkArchive = useCallback(async () => {
+    if (bulkOperationLoading) return;
+    
+    setBulkOperationLoading(true);
+    try {
+      const bookmarkIds = await getAllMatchingBookmarkIds();
+      setBulkOperationProgress({ current: 0, total: bookmarkIds.length });
+      
+      // For now, we'll assume "Archive" means adding to a special "Archive" list
+      // You might need to adjust this based on your API's archive functionality
+      const results = await Promise.allSettled(
+        bookmarkIds.map(async (_, index) => {
+          setBulkOperationProgress({ current: index + 1, total: bookmarkIds.length });
+          // This is a placeholder - you'll need to implement the actual archive logic
+          // Maybe call a dedicated archive API endpoint or add to an "Archive" list
+          throw new Error('Archive functionality not yet implemented');
+        })
+      );
+      
+      const successful = results.filter(r => r.status === 'fulfilled').length;
+      const failed = results.length - successful;
+      
+      setAssignmentFeedback({
+        type: successful === results.length ? 'success' : 'error',
+        message: `Archived ${successful} bookmarks${failed > 0 ? `, ${failed} failed` : ''}`
+      });
+      
+      // Clear selections and refresh
+      setSelectedIds([]);
+      setSelectAllMatching(false);
+      refetch();
+      
+    } catch (error) {
+      console.error('Bulk archive failed:', error);
+      setAssignmentFeedback({
+        type: 'error',
+        message: 'Archive operation failed'
+      });
+    } finally {
+      setBulkOperationLoading(false);
+      setBulkOperationProgress(null);
+      setTimeout(() => setAssignmentFeedback(null), 3000);
+    }
+  }, [bulkOperationLoading, getAllMatchingBookmarkIds, refetch]);
+
+  const handleBulkDelete = useCallback(async () => {
+    if (bulkOperationLoading) return;
+    
+    const bookmarkIds = selectAllMatching ? await getAllMatchingBookmarkIds() : selectedIds;
+    const confirmed = window.confirm(
+      `Are you sure you want to delete ${bookmarkIds.length} bookmark${bookmarkIds.length > 1 ? 's' : ''}? This action cannot be undone.`
+    );
+    
+    if (!confirmed) return;
+    
+    setBulkOperationLoading(true);
+    try {
+      setBulkOperationProgress({ current: 0, total: bookmarkIds.length });
+      
+      const results = await Promise.allSettled(
+        bookmarkIds.map(async (bookmarkId, index) => {
+          setBulkOperationProgress({ current: index + 1, total: bookmarkIds.length });
+          return karakeepDataProvider(import.meta.env.VITE_API_URL || "http://localhost:8000/api")
+            .deleteOne({ resource: "bookmarks", id: bookmarkId });
+        })
+      );
+      
+      const successful = results.filter(r => r.status === 'fulfilled').length;
+      const failed = results.length - successful;
+      
+      setAssignmentFeedback({
+        type: successful === results.length ? 'success' : 'error',
+        message: `Deleted ${successful} bookmarks${failed > 0 ? `, ${failed} failed` : ''}`
+      });
+      
+      // Clear selections and refresh
+      setSelectedIds([]);
+      setSelectAllMatching(false);
+      refetch();
+      
+    } catch (error) {
+      console.error('Bulk delete failed:', error);
+      setAssignmentFeedback({
+        type: 'error',
+        message: 'Delete operation failed'
+      });
+    } finally {
+      setBulkOperationLoading(false);
+      setBulkOperationProgress(null);
+      setTimeout(() => setAssignmentFeedback(null), 3000);
+    }
+  }, [bulkOperationLoading, selectAllMatching, selectedIds, getAllMatchingBookmarkIds, refetch]);
+
+  // Bulk tag assignment handler
+  const handleBulkTagAssignment = useCallback(async (tagIds: string[]) => {
+    if (bulkOperationLoading || tagIds.length === 0) return;
+    
+    setBulkOperationLoading(true);
+    try {
+      const bookmarkIds = await getAllMatchingBookmarkIds();
+      setBulkOperationProgress({ current: 0, total: bookmarkIds.length });
+      
+      const results = await Promise.allSettled(
+        bookmarkIds.map(async (bookmarkId, index) => {
+          setBulkOperationProgress({ current: index + 1, total: bookmarkIds.length });
+          return attachTagsToBookmark(bookmarkId, tagIds);
+        })
+      );
+      
+      const successful = results.filter(r => r.status === 'fulfilled').length;
+      const failed = results.length - successful;
+      
+      setAssignmentFeedback({
+        type: successful === results.length ? 'success' : 'error',
+        message: `Added tags to ${successful} bookmarks${failed > 0 ? `, ${failed} failed` : ''}`
+      });
+      
+      // Clear selections and refresh
+      setSelectedIds([]);
+      setSelectAllMatching(false);
+      refetch();
+      
+    } catch (error) {
+      console.error('Bulk tag assignment failed:', error);
+      setAssignmentFeedback({
+        type: 'error',
+        message: 'Tag assignment failed'
+      });
+    } finally {
+      setBulkOperationLoading(false);
+      setBulkOperationProgress(null);
+      setTimeout(() => setAssignmentFeedback(null), 3000);
+    }
+  }, [bulkOperationLoading, getAllMatchingBookmarkIds, refetch]);
+
+  // Bulk list assignment handler
+  const handleBulkListAssignment = useCallback(async (listIds: string[]) => {
+    if (bulkOperationLoading || listIds.length === 0) return;
+    
+    setBulkOperationLoading(true);
+    try {
+      const bookmarkIds = await getAllMatchingBookmarkIds();
+      setBulkOperationProgress({ current: 0, total: bookmarkIds.length });
+      
+      const results = await Promise.allSettled(
+        bookmarkIds.map(async (bookmarkId, index) => {
+          setBulkOperationProgress({ current: index + 1, total: bookmarkIds.length });
+          return attachBookmarkToLists(bookmarkId, listIds);
+        })
+      );
+      
+      const successful = results.filter(r => r.status === 'fulfilled').length;
+      const failed = results.length - successful;
+      
+      setAssignmentFeedback({
+        type: successful === results.length ? 'success' : 'error',
+        message: `Added bookmarks to lists: ${successful} successful${failed > 0 ? `, ${failed} failed` : ''}`
+      });
+      
+      // Clear selections and refresh
+      setSelectedIds([]);
+      setSelectAllMatching(false);
+      refetch();
+      
+    } catch (error) {
+      console.error('Bulk list assignment failed:', error);
+      setAssignmentFeedback({
+        type: 'error',
+        message: 'List assignment failed'
+      });
+    } finally {
+      setBulkOperationLoading(false);
+      setBulkOperationProgress(null);
+      setTimeout(() => setAssignmentFeedback(null), 3000);
+    }
+  }, [bulkOperationLoading, getAllMatchingBookmarkIds, refetch]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -530,19 +770,42 @@ export const BookmarkList: React.FC = () => {
         case "t":
         case "T":
           e.preventDefault();
-          if (selectedIds.length > 0) {
-            // Open triage for first selected bookmark
-            const firstSelectedId = selectedIds[0];
-            const selectedIndex = bookmarks.findIndex((b: any) => b.id === firstSelectedId);
-            if (selectedIndex >= 0) {
-              openTriageForIndex(selectedIndex);
-            }
+          if (selectedIds.length > 0 || selectAllMatching) {
+            // Bulk operation: Open tag assignment modal
+            setShowTagModal(true);
           } else if (focusedRowIndex >= 0 && focusedRowIndex <= maxIndex) {
             // Open triage for focused bookmark
             openTriageForIndex(focusedRowIndex);
           } else {
             // No selection or focus, open triage for first bookmark
             openTriageForIndex(0);
+          }
+          break;
+        case "l":
+        case "L":
+          e.preventDefault();
+          if (selectedIds.length > 0 || selectAllMatching) {
+            // Bulk operation: Open list assignment modal
+            setShowListModal(true);
+          }
+          break;
+        case "a":
+        case "A":
+          // Only handle archive if not part of Cmd+A or Cmd+Shift+A
+          if (!e.metaKey && !e.ctrlKey) {
+            e.preventDefault();
+            if (selectedIds.length > 0 || selectAllMatching) {
+              // Bulk operation: Archive bookmarks
+              handleBulkArchive();
+            }
+          }
+          break;
+        case "Delete":
+        case "Backspace":
+          // Only handle delete for bulk operations, not in triage mode
+          if (!triageBookmark && (selectedIds.length > 0 || selectAllMatching)) {
+            e.preventDefault();
+            handleBulkDelete();
           }
           break;
       }
@@ -865,17 +1128,57 @@ export const BookmarkList: React.FC = () => {
                   : `${selectedIds.length} items selected`
                 }
               </span>
-              {selectAllMatching && (
+              {(selectAllMatching || selectedIds.length > 0) && (
                 <div className="text-xs mt-1 opacity-80">
-                  Press Cmd+D to deselect • T=Tags • L=Lists • A=Archive
+                  Press Cmd+D to deselect • T=Tags • L=Lists • A=Archive • Delete=Remove
                 </div>
               )}
             </div>
             <div className="flex gap-2">
-              <button className="btn btn-sm">Add Tags</button>
-              <button className="btn btn-sm">Add to Lists</button>
-              <button className="btn btn-sm">Archive</button>
-              <button className="btn btn-sm btn-error">Delete</button>
+              <button 
+                className="btn btn-sm"
+                onClick={() => setShowTagModal(true)}
+                disabled={bulkOperationLoading}
+              >
+                {bulkOperationLoading ? (
+                  <span className="loading loading-spinner loading-xs"></span>
+                ) : (
+                  'Add Tags'
+                )}
+              </button>
+              <button 
+                className="btn btn-sm"
+                onClick={() => setShowListModal(true)}
+                disabled={bulkOperationLoading}
+              >
+                {bulkOperationLoading ? (
+                  <span className="loading loading-spinner loading-xs"></span>
+                ) : (
+                  'Add to Lists'
+                )}
+              </button>
+              <button 
+                className="btn btn-sm"
+                onClick={handleBulkArchive}
+                disabled={bulkOperationLoading}
+              >
+                {bulkOperationLoading ? (
+                  <span className="loading loading-spinner loading-xs"></span>
+                ) : (
+                  'Archive'
+                )}
+              </button>
+              <button 
+                className="btn btn-sm btn-error"
+                onClick={handleBulkDelete}
+                disabled={bulkOperationLoading}
+              >
+                {bulkOperationLoading ? (
+                  <span className="loading loading-spinner loading-xs"></span>
+                ) : (
+                  'Delete'
+                )}
+              </button>
             </div>
           </div>
         </div>
@@ -1104,6 +1407,61 @@ export const BookmarkList: React.FC = () => {
         selectedListIds={filters.listIds}
         title="Filter by Lists"
       />
+
+      {/* Bulk Tag Modal */}
+      <BulkTagModal
+        isOpen={showTagModal}
+        onClose={() => setShowTagModal(false)}
+        onApply={handleBulkTagAssignment}
+        availableTags={tagsData?.data || []}
+        isLoading={bulkOperationLoading}
+        selectedBookmarkCount={selectAllMatching ? 0 : selectedIds.length}
+        selectAllMatching={selectAllMatching}
+      />
+
+      {/* Bulk List Modal */}
+      <BulkListModal
+        isOpen={showListModal}
+        onClose={() => setShowListModal(false)}
+        onApply={handleBulkListAssignment}
+        availableLists={listsData?.data || []}
+        isLoading={bulkOperationLoading}
+        selectedBookmarkCount={selectAllMatching ? 0 : selectedIds.length}
+        selectAllMatching={selectAllMatching}
+      />
+
+      {/* Progress Modal */}
+      {bulkOperationProgress && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/50"></div>
+          <div className="relative bg-base-100 rounded-lg p-6 shadow-2xl">
+            <div className="text-lg font-semibold mb-4">Processing Bookmarks</div>
+            <div className="flex items-center gap-4">
+              <div className="loading loading-spinner loading-lg"></div>
+              <div>
+                <div className="text-sm text-base-content/70">
+                  {bulkOperationProgress.current} of {bulkOperationProgress.total} completed
+                </div>
+                <div className="w-64 bg-base-300 rounded-full h-2 mt-2">
+                  <div 
+                    className="bg-primary h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${(bulkOperationProgress.current / bulkOperationProgress.total) * 100}%` }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Assignment Feedback Toast */}
+      {assignmentFeedback && (
+        <div className="toast toast-center toast-top">
+          <div className={`alert ${assignmentFeedback.type === 'success' ? 'alert-success' : assignmentFeedback.type === 'error' ? 'alert-error' : 'alert-info'}`}>
+            <span>{assignmentFeedback.message}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

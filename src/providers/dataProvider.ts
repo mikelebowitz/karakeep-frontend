@@ -1,6 +1,5 @@
 import type { DataProvider, CrudFilters, CrudSorting } from "@refinedev/core";
 import axiosInstance from "../lib/axios";
-import { apiConfig } from "../config/api.config";
 
 // Cursor storage for pagination
 const cursorStorage = {
@@ -383,7 +382,7 @@ export const attachTagsToBookmark = async (bookmarkId: string, tagIds: string[])
 
 // Legacy function - no longer needed since we have the correct API endpoint
 // Kept for reference but should not be used
-export const testAlternativeListAssignment = async (bookmarkId: string, listId: string) => {
+export const testAlternativeListAssignment = async (_bookmarkId: string, _listId: string) => {
   console.warn("⚠️ testAlternativeListAssignment is deprecated - use attachBookmarkToLists with correct PUT endpoint");
   return null;
 };

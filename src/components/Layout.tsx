@@ -1,7 +1,12 @@
-import { type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState, useCallback } from "react";
 import { useLogout, useGetIdentity } from "@refinedev/core";
 import type { User } from "../types";
 import { listMembershipGraph } from "../services/listMembershipGraph";
+import { 
+  initializeTheme, 
+  cycleToNextTheme, 
+  getThemeDisplayName
+} from "../services/themeManager";
 
 interface LayoutProps {
   children: ReactNode;
@@ -11,6 +16,14 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { mutate: logout } = useLogout();
   const { data: user } = useGetIdentity<User>();
   const [isGraphInitializing, setIsGraphInitializing] = useState(!listMembershipGraph.isReady());
+  
+  // Theme management state
+  const [themeChangeToast, setThemeChangeToast] = useState<string | null>(null);
+
+  // Initialize theme system
+  useEffect(() => {
+    initializeTheme();
+  }, []);
 
   // Initialize list membership graph after authentication
   useEffect(() => {
@@ -28,13 +41,47 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     }
   }, []);
 
+  // Theme cycling function
+  const handleThemeCycle = useCallback(() => {
+    const newTheme = cycleToNextTheme();
+    const displayName = getThemeDisplayName(newTheme);
+    setThemeChangeToast(`Theme: ${displayName}`);
+    
+    // Auto-hide toast after 2 seconds
+    setTimeout(() => setThemeChangeToast(null), 2000);
+  }, []);
+
+  // Global keyboard listener for theme switching
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Check if user is typing in an input field
+      const activeElement = document.activeElement;
+      if (
+        (activeElement?.tagName === 'INPUT' && (activeElement as HTMLInputElement).type !== 'checkbox') ||
+        activeElement?.tagName === 'TEXTAREA' ||
+        (activeElement as HTMLElement)?.contentEditable === 'true'
+      ) {
+        return;
+      }
+
+      // Listen for backslash key to cycle themes
+      if (e.key === '\\') {
+        e.preventDefault();
+        handleThemeCycle();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleThemeCycle]);
+
   const handleLogout = () => {
     // Reset graph on logout
     listMembershipGraph.reset();
     logout();
   };
   return (
-    <div className="drawer lg:drawer-open" data-theme="dark">
+    <div className="drawer lg:drawer-open">
       <input id="drawer-toggle" type="checkbox" className="drawer-toggle" />
       
       {/* Main content */}
@@ -143,6 +190,20 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
         </aside>
       </div>
+      
+      {/* Theme Change Toast */}
+      {themeChangeToast && (
+        <div className="toast toast-center toast-top">
+          <div className="alert alert-info shadow-lg">
+            <div className="flex items-center gap-2">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5H9a2 2 0 00-2 2v10a4 4 0 004 4h6a2 2 0 002-2V7a2 2 0 00-2-2z" />
+              </svg>
+              <span className="font-medium">{themeChangeToast}</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
