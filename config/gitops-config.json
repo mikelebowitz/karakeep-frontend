@@ -1,0 +1,47 @@
+{
+  "gitops": {
+    "enabled": true,
+    "auto_push": true,
+    "batch_commits": true,
+    "target_tools": [
+      "Edit",
+      "Write",
+      "MultiEdit",
+      "Bash"
+    ],
+    "documentation_files": [
+      "README.md",
+      "CHANGELOG.md",
+      "CLAUDE.md"
+    ],
+    "ignore_patterns": [
+      "node_modules/*",
+      "dist/*",
+      "build/*",
+      ".git/*",
+      "*.log",
+      "__pycache__/*",
+      "target/*"
+    ],
+    "commit_templates": {
+      "Edit": "Update {filename}: {description}",
+      "Write": "Create {filename}: {description}",
+      "MultiEdit": "Modify {count} files: {description}",
+      "Bash": "Execute command: {description}"
+    },
+    "session_storage": "/tmp/claude-gitops-session.json",
+    "max_session_duration": 3600
+  },
+  "github": {
+    "auto_push": true,
+    "remote": "origin",
+    "create_releases": false,
+    "branch_detection": "dynamic"
+  },
+  "documentation": {
+    "update_progress": true,
+    "generate_changelog": true,
+    "update_readme": true,
+    "include_tool_context": true
+  }
+}
